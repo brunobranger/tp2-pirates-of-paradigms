@@ -1,0 +1,26 @@
+package tp2.model.ship;
+
+/**
+ * Efecto temporal que reduce el movimiento a 1 (Vendaval, Tormenta).
+ * Dura una cantidad configurable de turnos.
+ */
+public class ReducedMovementEffect implements ShipEffect {
+
+    private int turnsRemaining;
+
+    public ReducedMovementEffect(int turns) {
+        this.turnsRemaining = turns;
+    }
+
+    @Override
+    public EffectType getType() { return EffectType.REDUCED_MOVEMENT; }
+
+    @Override
+    public void tick() { turnsRemaining--; }
+
+    @Override
+    public boolean isExpired() { return turnsRemaining <= 0; }
+
+    @Override
+    public int modifyMovement(int baseMovement) { return 1; }
+}
