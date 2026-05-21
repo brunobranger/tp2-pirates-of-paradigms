@@ -9,6 +9,9 @@ public class ReducedMovementEffect implements ShipEffect {
     private int turnsRemaining;
 
     public ReducedMovementEffect(int turns) {
+        if (turns <= 0) {
+            throw new IllegalArgumentException("Turns must be positive");
+        }
         this.turnsRemaining = turns;
     }
 
@@ -23,4 +26,6 @@ public class ReducedMovementEffect implements ShipEffect {
 
     @Override
     public int modifyMovement(int baseMovement) { return 1; }
+
+    public int getTurnsRemaining() { return turnsRemaining; }
 }

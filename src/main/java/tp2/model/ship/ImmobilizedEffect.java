@@ -9,6 +9,9 @@ public class ImmobilizedEffect implements ShipEffect {
     private int turnsRemaining;
 
     public ImmobilizedEffect(int turns) {
+        if (turns <= 0) {
+            throw new IllegalArgumentException("Turns must be positive");
+        }
         this.turnsRemaining = turns;
     }
 
@@ -23,4 +26,6 @@ public class ImmobilizedEffect implements ShipEffect {
 
     @Override
     public boolean preventsMovement() { return true; }
+
+    public int getTurnsRemaining() { return turnsRemaining; }
 }

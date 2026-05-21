@@ -87,8 +87,9 @@ public abstract class Ship {
      * @return daño efectivo aplicado
      */
     public int receiveDamage(int rawDamage) {
-        // calcular daño efectivo, aplicar a currentHp, verificar hundimiento
-        return 0;
+        int effectiveDamage = Math.max(0, rawDamage - def);
+        currentHp = Math.max(0, currentHp - effectiveDamage);
+        return effectiveDamage;
     }
 
     /**
@@ -105,7 +106,10 @@ public abstract class Ship {
      * @param amount cantidad de HP a recuperar
      */
     public void repairHp(int amount) {
-        // currentHp = Math.min(currentHp + amount, maxHp)
+        if (amount <= 0) {
+            return;
+        }
+        currentHp = Math.min(maxHp, currentHp + amount);
     }
 
     // -------------------------------------------------------------------------
@@ -119,8 +123,11 @@ public abstract class Ship {
      * @return cantidad de casillas que puede moverse este turno
      */
     public int getEffectiveMovement() {
-        // aplicar efectos activos sobre this.mov
-        return mov;
+        int effectiveMovement = mov;
+        for (ShipEffect effect : activeEffects) {
+            effectiveMovement = effect.modifyMovement(effectiveMovement);
+        }
+        return Math.max(0, effectiveMovement);
     }
 
     /**
@@ -130,8 +137,19 @@ public abstract class Ship {
      * @return rango de disparo efectivo
      */
     public int getEffectiveRange() {
-        // aplicar efectos activos sobre this.rng
-        return rng;
+        int effectiveRange = rng;
+        for (ShipEffect effect : activeEffects) {
+            effectiveRange = effect.modifyRange(effectiveRange);
+        }
+        return Math.max(0, effectiveRange);
+    }
+
+    public int getEffectiveAttack() {
+        int effectiveAttack = atk;
+        for (ShipEffect effect : activeEffects) {
+            effectiveAttack = effect.modifyAttack(effectiveAttack);
+        }
+        return Math.max(0, effectiveAttack);
     }
 
     /**
@@ -153,16 +171,28 @@ public abstract class Ship {
      * @return true si el barco puede moverse (no atacó, no se movió, no está incendiado ni inmovilizado)
      */
     public boolean canMove() {
-        // !hasMovedThisTurn && !hasAttackedThisTurn && no hay efecto que lo impida
-        return false;
+        if (isSunk()) {
+            return false;
+        }
+        if (hasMovedThisTurn || hasAttackedThisTurn) {
+            return false;
+        }
+        return activeEffects.stream()
+                .noneMatch(ShipEffect::preventsMovement);
     }
 
     /**
      * @return true si el barco puede atacar (no atacó ya y no está incendiado)
      */
     public boolean canAttack() {
-        // !hasAttackedThisTurn && no hay efecto FIRE activo
-        return false;
+        if (isSunk()) {
+            return false;
+        }
+        if (hasAttackedThisTurn) {
+            return false;
+        }
+        return activeEffects.stream()
+                .noneMatch(ShipEffect::preventsAttack);
     }
 
     /**
@@ -170,8 +200,14 @@ public abstract class Ship {
      * También reduce un tick todos los efectos temporales activos y elimina los vencidos.
      */
     public void resetTurnState() {
-        // hasMovedThisTurn = false; hasAttackedThisTurn = false;
-        //       efectos.forEach(e -> e.tick()); efectos.removeIf(ShipEffect::isExpired);
+        hasMovedThisTurn = false;
+        hasAttackedThisTurn = false;
+
+        for (ShipEffect effect : activeEffects) {
+            effect.applyEndOfTurnDamage(this);
+        }
+        activeEffects.forEach(ShipEffect::tick);
+        activeEffects.removeIf(ShipEffect::isExpired);
     }
 
     // -------------------------------------------------------------------------
@@ -184,22 +220,28 @@ public abstract class Ship {
      * @param effect efecto a aplicar
      */
     public void addEffect(ShipEffect effect) {
-        // ...
+
+        if (effect == null) {
+            throw new IllegalArgumentException("Effect cannot be null");
+        }
+        activeEffects.add(effect);
     }
 
     /**
      * @return true si el barco tiene un incendio activo
      */
     public boolean isOnFire() {
-        // activeEffects.stream().anyMatch(e -> e.getType() == EffectType.FIRE)
-        return false;
+        return activeEffects.stream()
+                .anyMatch(effect -> effect.getType() == EffectType.FIRE);
     }
 
     /**
      * Extingue el incendio del barco (usando madera o llegando a puerto propio).
      */
     public void extinguishFire() {
-        // remover efectos de tipo FIRE
+        activeEffects.removeIf(
+                effect -> effect.getType() == EffectType.FIRE
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -213,7 +255,14 @@ public abstract class Ship {
      * @throws IllegalStateException si ya transporta uno
      */
     public void pickUpTreasure(DynasticTreasure treasure) {
-        // TODO
+
+        if (treasure == null) {
+            throw new IllegalArgumentException("Treasure cannot be null");
+        }
+        if (carriedTreasure != null) {
+            throw new IllegalStateException("Ship already carries a treasure");
+        }
+        carriedTreasure = treasure;
     }
 
     /**
@@ -222,8 +271,10 @@ public abstract class Ship {
      * @return el tesoro soltado, o null si no transportaba ninguno
      */
     public DynasticTreasure dropTreasure() {
-        // ...
-        return null;
+
+        DynasticTreasure dropped = carriedTreasure;
+        carriedTreasure = null;
+        return dropped;
     }
 
     public boolean isCarryingTreasure() {
