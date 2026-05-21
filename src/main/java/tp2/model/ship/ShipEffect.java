@@ -49,6 +49,10 @@ public interface ShipEffect {
         return baseRange;
     }
 
+    default int modifyAttack(int baseAttack) {
+        return baseAttack;
+    }
+
     /**
      * @return true si este efecto impide atacar (ej. Incendio)
      */
@@ -60,6 +64,14 @@ public interface ShipEffect {
      * @return true si este efecto impide moverse (ej. Kraken)
      */
     default boolean preventsMovement() {
+        return false;
+    }
+
+    default boolean allowsMoveAfterAttack() {
+        return false;
+    }
+
+    default boolean allowsAttackAfterMove() {
         return false;
     }
 
