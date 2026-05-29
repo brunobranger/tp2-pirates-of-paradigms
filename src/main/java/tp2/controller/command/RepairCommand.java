@@ -1,6 +1,6 @@
 package tp2.controller.command;
 
-import tp2.model.GameState;
+import tp2.model.game.GameState;
 import tp2.model.ship.Ship;
 import tp2.config.GameConfig;
 import tp2.model.resource.ResourceCosts;
