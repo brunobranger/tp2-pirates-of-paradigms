@@ -86,6 +86,7 @@ public class Player {
     }
 
     /**
+     * Comprueba si el buque insignia se encuentra hundido
      * @return true si el barco insignia fue hundido
      */
     public boolean isFlagshipSunk() {
@@ -112,23 +113,32 @@ public class Player {
     // -------------------------------------------------------------------------
 
     /**
-     * El jugador se rinde. Condición de derrota voluntaria.
+     * Establecer rendicion voluntaria por el jugador.
      */
     public void surrender() {
         this.surrendered = true;
     }
 
+    /**
+     * Retorno de estado de rendicion del jugador.
+     * @return true si se ha rendido, false de caso contrario.
+     */
     public boolean hasSurrendered() { return surrendered; }
 
     // -------------------------------------------------------------------------
-    // Getters / setters
+    // Getters
     // -------------------------------------------------------------------------
 
     public String getName() { return name; }
     public Faction getFaction() { return faction; }
     public Position getHomePortPosition() { return homePortPosition; }
-    public void setHomePortPosition(Position pos) { this.homePortPosition = pos; }
     public DynasticTreasure getOwnTreasure() { return ownTreasure; }
+
+    // -------------------------------------------------------------------------
+    // Setters
+    // -------------------------------------------------------------------------
+
+    public void setHomePortPosition(Position pos) { this.homePortPosition = pos; }
     public void setOwnTreasure(DynasticTreasure treasure) { this.ownTreasure = treasure; }
 
     @Override
