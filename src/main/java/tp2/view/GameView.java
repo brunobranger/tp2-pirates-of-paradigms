@@ -99,6 +99,9 @@ public interface GameView {
     /** Muestra las estadísticas de un barco. */
     void showShipStats(Ship ship);
 
+    /** Muestra las posiciones alcanzables para que el jugador elija destino. */
+    void showReachablePositions(Set<Position> reachable);
+
     /** Muestra el resultado de un ataque. */
     void showAttackResult(AttackResult result);
 
