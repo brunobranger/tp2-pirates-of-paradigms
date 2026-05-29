@@ -1,7 +1,7 @@
 package tp2.model;
 
 /**
- * Condiciones de victoria pausibles.
+ * Las tres condiciones de victoria definidas en el enunciado.
  */
 public enum VictoryCondition {
     /** El barco insignia rival fue hundido. */
