@@ -1,5 +1,6 @@
 package tp2.controller;
 
+import tp2.controller.command.*;
 import tp2.model.GameState;
 import tp2.model.board.Board;
 import tp2.model.board.Position;
@@ -11,11 +12,15 @@ import tp2.model.player.Player;
 import tp2.model.ship.Ship;
 import tp2.config.GameLoader;
 import tp2.view.GameView;
+import tp2.view.ShipAction;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Controlador principal del juego. Patrón MVC: coordina Model (GameState)
  * y View (GameView) sin que ninguno de los dos se conozca entre sí.
- *
+
  * Responsabilidades:
  *   - Ejecutar el loop principal de turnos.
  *   - Delegar en GameState las modificaciones del modelo.
@@ -24,21 +29,21 @@ import tp2.view.GameView;
  *
  * Principio: SRP — el controlador no imprime ni calcula daño; delega.
  * Principio: DIP — depende de GameView (interfaz), no de una consola específica.
+ * Patrón Command: cada acción del jugador se encapsula en un ShipCommand.
  */
 public class GameController {
 
-    private GameState gameState;
+    private final GameState gameState;
     private final GameView view;
     private final CombatSystem combatSystem;
     private final EventManager eventManager;
-    private final GameLoader loader;
 
-    public GameController(GameView view, GameLoader loader) {
+    public GameController(GameState gameState, GameView view,
+                          CombatSystem combatSystem, EventManager eventManager) {
+        this.gameState = gameState;
         this.view = view;
-        this.loader = loader;
-        this.eventManager = new EventManager();
-        // combatSystem se inicializa tras cargar el board
-        this.combatSystem = null; // inicializar con el board cargado
+        this.combatSystem = combatSystem;
+        this.eventManager = eventManager;
     }
 
     // -------------------------------------------------------------------------
@@ -46,68 +51,62 @@ public class GameController {
     // -------------------------------------------------------------------------
 
     /**
-     * Punto de entrada del juego. Orquesta: carga → setup → loop de turnos → fin.
+     * Inicia el loop principal del juego.
+     * Alterna turnos hasta que haya un ganador.
      */
     public void start() {
-        //
-        // 1. gameState = loader.loadGame(view.askMapFile(), view.askFleetFile())
-        // 2. setupPhase()
-        // 3. decideFirstPlayer()
-        // 4. while (!gameState.isGameOver()) { playTurn(); }
-        // 5. view.showVictory(gameState.getWinner(), gameState.getVictoryCondition())
+        decideFirstPlayer();
+        while (!gameState.isGameOver()) {
+            playTurn();
+        }
+        view.showVictory(gameState.getWinner(), gameState.getVictoryCondition());
     }
 
     /**
-     * Fase de setup: jugadores colocan puertos y barcos.
-     */
-    private void setupPhase() {
-        //
-        // Para cada jugador:
-        //   1. view.askPortPosition() -> validar -> board.getCellAt(pos).assignPortOwner(player)
-        //   2. Para cada barco en la flota: view.askShipPosition(ship) -> board.placeShip
-        //   3. Colocar tesoros dinásticos en posición aleatoria válida
-    }
-
-    /**
-     * Sorteo inicial: elige al azar quién comienza.
+     * Sorteo inicial: decide al azar quién comienza.
      */
     private void decideFirstPlayer() {
-        // Random().nextBoolean() -> gameState.setCurrentPlayer(player1 o player2)
-        // view.showFirstPlayer(gameState.getCurrentPlayer())
+        if (tp2.util.RandomUtils.coinFlip()) {
+            gameState.setCurrentPlayer(gameState.getPlayer2());
+        }
+        view.showFirstPlayer(gameState.getCurrentPlayer());
     }
 
     /**
      * Ejecuta el turno completo del jugador actual.
+     * El jugador puede realizar acciones hasta que elija finalizar el turno.
      */
     private void playTurn() {
-        //
-        // 1. view.showBoard(gameState)
-        // 2. view.showTurnSummary(gameState)
-        // 3. boolean turnEnded = false
-        // 4. while (!turnEnded) { turnEnded = handlePlayerAction(); }
-        // 5. applyEndOfTurnEffects()
-        // 6. checkAndApplyEvent()
-        // 7. gameState.checkVictoryConditions()
-        // 8. gameState.switchTurn()
+        view.showBoard(gameState);
+        view.showTurnSummary(gameState);
+
+        boolean turnEnded = false;
+        while (!turnEnded) {
+            turnEnded = handleMainMenuOption();
+        }
+
+        applyEndOfTurnEffects();
+        checkAndApplyEvent();
+        gameState.checkVictoryConditions();
+        gameState.switchTurn();
     }
 
+    // -------------------------------------------------------------------------
+    // Menú principal
+    // -------------------------------------------------------------------------
+
     /**
-     * Lee y ejecuta una acción del jugador actual.
-     * Retorna true si el jugador eligió "Finalizar turno".
-     *
-     * @return true si el turno terminó
+     * Muestra el menú principal y maneja la opción elegida.
+     * Retorna true si el jugador eligió finalizar el turno.
      */
-    private boolean handlePlayerAction() {
-        //
-        // int option = view.showMainMenu()
-        // return switch (option) {
-        //     case 1 -> { showGameStatus(); yield false; }
-        //     case 2 -> { handleShipAction(); yield false; }
-        //     case 3 -> { handleSurrender(); yield true; }
-        //     case 4 -> true; // Finalizar turno
-        //     default -> { view.showInvalidOption(); yield false; }
-        // }
-        return false;
+    private boolean handleMainMenuOption() {
+        int option = view.showMainMenu();
+        return switch (option) {
+            case 1 -> { showGameStatus(); yield false; }
+            case 2 -> { handleShipAction(); yield false; }
+            case 3 -> { handleSurrender(); yield true; }
+            default -> { view.showInvalidOption(); yield false; }
+        };
     }
 
     // -------------------------------------------------------------------------
@@ -115,127 +114,162 @@ public class GameController {
     // -------------------------------------------------------------------------
 
     /**
-     * Submenú: el jugador elige un barco propio y luego una acción sobre él.
+     * Submenú: el jugador elige un barco y luego una acción sobre él.
+     * Si cancela en cualquier punto, vuelve al menú principal.
      */
     private void handleShipAction() {
-        //
-        // 1. view.showFleet(currentPlayer) -> jugador elige barco
-        // 2. view.showShipStats(ship)
-        // 3. view.showShipActions(ship, gameState) -> jugador elige acción
-        // 4. switch acción: MOVE, ATTACK, REPAIR, BUY_PORT, EXTINGUISH_FIRE, CANCEL
+        Ship ship = view.askSelectShip(gameState.getCurrentPlayer());
+        if (ship == null) return; // canceló la selección
+
+        view.showShipStats(ship);
+        ShipAction action = view.askShipAction(ship, gameState);
+
+        switch (action) {
+            case MOVE            -> handleMove(ship);
+            case ATTACK          -> handleAttack(ship);
+            case REPAIR          -> handleRepair(ship);
+            case BUY_PORT        -> handleBuyPort(ship);
+            case EXTINGUISH_FIRE -> handleExtinguishFire(ship);
+            case CANCEL          -> {} // vuelve al menú principal sin hacer nada
+        }
     }
 
     /**
-     * Ejecuta el movimiento de un barco a una posición elegida por el jugador.
-     *
-     * @param ship barco a mover
+     * Construye y ejecuta un MoveCommand.
+     * Muestra las posiciones alcanzables y pide destino al jugador.
      */
     private void handleMove(Ship ship) {
-        //
-        // 1. reachable = gameState.getBoard().getReachablePositions(ship.getPosition(), ship.getEffectiveMovement())
-        // 2. view.showReachablePositions(reachable)
-        // 3. Position dest = view.askDestination()
-        // 4. if (!reachable.contains(dest)) -> view.showError, return
-        // 5. gameState.getBoard().moveShip(ship, dest)
-        // 6. gameState.getBoard().applyMarineCurrentIfPresent(ship)
-        // 7. ship.registerMove()
-        // 8. checkTreasurePickup(ship)
-        // 9. checkPortEffects(ship)
+        Set<Position> reachable = gameState.getBoard()
+                .getReachablePositions(ship.getPosition(), ship.getEffectiveMovement());
+
+        view.showReachablePositions(reachable);
+        Position destination = view.askDestination(reachable);
+        if (destination == null) return; // canceló
+
+        ShipCommand command = new MoveCommand(ship, destination);
+        executeCommand(command);
     }
 
     /**
-     * Ejecuta el ataque de un barco a un enemigo elegido por el jugador.
-     *
-     * @param attacker barco atacante
+     * Construye y ejecuta un AttackCommand.
+     * Muestra los objetivos en rango y pide al jugador elegir uno.
      */
-    private void handleAttack(Ship attacker) {
-        //
-        // 1. opponent = gameState.getOpponentOf(currentPlayer)
-        // 2. targets = gameState.getBoard().getTargetsInRange(attacker, attacker.getEffectiveRange(), opponent)
-        // 3. if (targets.isEmpty()) -> view.showNoTargets(); return
-        // 4. Ship target = view.askTarget(targets)
-        // 5. AttackResult result = combatSystem.attack(attacker, target)
-        // 6. view.showAttackResult(result)
-        // 7. if (result.isDefenderSunk()) -> opponent.removeShip(target); rewardForSink()
-        // 8. gameState.checkVictoryConditions()
+    private void handleAttack(Ship ship) {
+        var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
+        List<Ship> targets = gameState.getBoard()
+                .getTargetsInRange(ship, ship.getEffectiveRange(), opponent);
+
+        if (targets.isEmpty()) {
+            view.showNoTargets();
+            return;
+        }
+
+        Ship target = view.askTarget(targets);
+        if (target == null) return; // canceló
+
+        ShipCommand command = new AttackCommand(ship, target, combatSystem);
+        executeCommand(command);
     }
 
     /**
-     * Repara un barco (en puerto propio = gratis; fuera = cuesta madera).
-     *
-     * @param ship barco a reparar
+     * Construye y ejecuta un RepairCommand.
      */
     private void handleRepair(Ship ship) {
-        // ...
+        ShipCommand command = new RepairCommand(ship);
+        executeCommand(command);
     }
 
     /**
-     * Compra un puerto sin dueño en la posición del barco.
-     *
-     * @param ship barco que compra el puerto
+     * Construye y ejecuta un BuyPortCommand.
      */
     private void handleBuyPort(Ship ship) {
-        // ...
+        ShipCommand command = new BuyPortCommand(ship);
+        executeCommand(command);
     }
 
     /**
-     * Apaga el incendio de un barco (cuesta madera o está en puerto propio).
-     *
-     * @param ship barco incendiado
+     * Construye y ejecuta un ExtinguishFireCommand.
      */
     private void handleExtinguishFire(Ship ship) {
-        // ...
+        ShipCommand command = new ExtinguishFireCommand(ship);
+        executeCommand(command);
     }
 
     // -------------------------------------------------------------------------
-    // Fin de turno y eventos
+    // Ejecución de comandos
     // -------------------------------------------------------------------------
 
     /**
-     * Aplica efectos de fin de turno: daño por incendio, tick de efectos, tesoros flotantes.
+     * Verifica canExecute y ejecuta el comando.
+     * Si no puede ejecutarse, muestra error y vuelve al menú (no termina el turno).
+     *
+     * Principio Tell Don't Ask: el comando sabe si puede ejecutarse,
+     * el controller no inspecciona el estado para decidirlo.
+     */
+    private void executeCommand(ShipCommand command) {
+        if (!command.canExecute(gameState)) {
+            view.showError("Acción no válida en este momento.");
+            return;
+        }
+        command.execute(gameState);
+    }
+
+    // -------------------------------------------------------------------------
+    // Fin de turno
+    // -------------------------------------------------------------------------
+
+    /**
+     * Aplica efectos de fin de turno: daño por incendio, tick de efectos activos,
+     * reparación en puerto propio, limpieza de tesoros flotantes vencidos.
      */
     private void applyEndOfTurnEffects() {
-        //
-        // Para cada barco activo de ambos jugadores:
-        //   ship.getActiveEffects().forEach(e -> e.applyEndOfTurnDamage(ship))
-        //   ship.resetTurnState() [solo al inicio del propio turno, ver GameState.switchTurn]
-        // gameState.cleanExpiredFloatingTreasures()
+        var currentPlayer = gameState.getCurrentPlayer();
+
+        // Daño por incendio y tick de efectos para cada barco activo
+        for (Ship ship : currentPlayer.getActiveFleet()) {
+            ship.getActiveEffects().forEach(e -> e.applyEndOfTurnDamage(ship));
+            ship.resetTurnState();
+
+            // Reparación automática en puerto propio al finalizar turno
+            var cell = gameState.getBoard().getCellAt(ship.getPosition());
+            if (cell.isOwnedPortOf(currentPlayer)) {
+                ship.repairHp(tp2.config.GameConfig.PORT_REPAIR_AMOUNT);
+
+                // Condición de victoria: tesoro enemigo en puerto propio
+                if (ship.isCarryingTreasure()) {
+                    var carried = ship.getCarriedTreasure();
+                    if (!carried.getOwner().equals(currentPlayer)) {
+                        gameState.checkVictoryConditions();
+                    }
+                }
+            }
+        }
+
+        gameState.cleanExpiredFloatingTreasures();
     }
 
     /**
-     * Verifica si corresponde disparar un evento aleatorio y lo aplica.
+     * Verifica si corresponde un evento aleatorio y lo aplica.
      */
     private void checkAndApplyEvent() {
-        //
-        // GameEvent event = eventManager.checkAndGetEvent(gameState)
-        // if (event != null) {
-        //     view.showEventAnnouncement(event)
-        //     EventResult result = event.apply(gameState)
-        //     view.showEventResult(result)
-        // }
+        GameEvent event = eventManager.checkAndGetEvent(gameState);
+        if (event == null) return;
+
+        view.showEventAnnouncement(event);
+        var result = event.apply(gameState);
+        view.showEventResult(result);
     }
 
-    /**
-     * Chequea si el barco está sobre un tesoro (dinástico o flotante) y lo recoge.
-     *
-     * @param ship barco que se movió
-     */
-    private void checkTreasurePickup(Ship ship) {
-        // ...
-    }
-
-    /**
-     * Otorga recompensa en recursos al hundir un barco enemigo.
-     */
-    private void rewardForSink() {
-        // currentPlayer.getResources().earnGold(ResourceCosts.SINK_SHIP_GOLD_REWARD)
-    }
+    // -------------------------------------------------------------------------
+    // Otras acciones del menú
+    // -------------------------------------------------------------------------
 
     private void showGameStatus() {
-        // view.showFullStatus(gameState)
+        view.showFullStatus(gameState);
     }
 
     private void handleSurrender() {
-        // gameState.getCurrentPlayer().surrender(); gameState.checkVictoryConditions()
+        gameState.getCurrentPlayer().surrender();
+        gameState.checkVictoryConditions();
     }
 }
