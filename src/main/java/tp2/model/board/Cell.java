@@ -36,12 +36,10 @@ public class Cell {
     // -------------------------------------------------------------------------
 
     /**
-     * @return true si la casilla puede ser ocupada por un barco
-     *         (no es isla, no está ya ocupada).
+     * @return true si la casilla puede ser ocupada por un barco (no es isla, no está ya ocupada).
      */
     public boolean isNavigable() {
-        // terrain != ISLAND && occupant == null
-        return false;
+        return this.terrain != TerrainType.ISLAND && this.occupant == null;
     }
 
     /**
@@ -77,14 +75,15 @@ public class Cell {
      * @throws IllegalStateException si la casilla ya está ocupada
      */
     public void placeShip(Ship ship) {
-        // ...
+        if (this.isOccupied()) throw new IllegalStateException("The cell is already occupied");
+        occupant = ship;
     }
 
     /**
      * Elimina el barco de la casilla (por muerte o movimiento).
      */
     public void removeShip() {
-        // ...
+        occupant = null;
     }
 
     /**
@@ -94,7 +93,8 @@ public class Cell {
      * @throws IllegalStateException si no es una casilla de tipo PORT
      */
     public void assignPortOwner(Player player) {
-        // ...
+        if (terrain != TerrainType.PORT) throw new IllegalStateException("The terrain is not a PORT");
+        portOwner = player;
     }
 
     /**
@@ -103,7 +103,7 @@ public class Cell {
      * @param treasure tesoro a dejar flotando
      */
     public void placeFloatingTreasure(DynasticTreasure treasure) {
-        // ...
+        this.floatingTreasure = treasure;
     }
 
     /**
@@ -112,8 +112,9 @@ public class Cell {
      * @return tesoro flotante, o null si no había ninguno
      */
     public DynasticTreasure pickUpTreasure() {
-        // ...
-        return null;
+        DynasticTreasure treasure = this.floatingTreasure;
+        this.floatingTreasure = null;
+        return treasure;
     }
 
     /**

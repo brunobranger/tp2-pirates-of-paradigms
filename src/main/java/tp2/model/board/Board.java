@@ -3,8 +3,7 @@ package tp2.model.board;
 import tp2.model.ship.Ship;
 import tp2.model.player.Player;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * El tablero de juego: una rejilla rectangular de {@link Cell}s.
@@ -23,12 +22,18 @@ public class Board {
     private final int rows;
     private final int cols;
     private final Cell[][] grid;
+    private record Node(Position position, int steps) {} // Para hacer BFS
 
     public Board(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
         this.grid = new Cell[rows][cols];
-        // inicializar todas las celdas con TerrainType.OPEN_SEA
+
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+               this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -43,8 +48,8 @@ public class Board {
      * @throws IllegalArgumentException si la posición está fuera del tablero
      */
     public Cell getCellAt(Position position) {
-        // validar límites y retornar grid[position.getRow()][position.getCol()]
-        return null;
+        if (!this.isWithinBounds(position)) throw new IllegalArgumentException("The cell is not within the board bounds");
+        return grid[position.getRow()][position.getCol()];
     }
 
     /**
@@ -52,8 +57,9 @@ public class Board {
      * @return true si la posición está dentro de los límites del tablero
      */
     public boolean isWithinBounds(Position position) {
-        // TODO
-        return false;
+        int row = position.getRow();
+        int col = position.getCol();
+        return row >= 0 && row < rows && col >= 0 && col < cols;
     }
 
     // -------------------------------------------------------------------------
@@ -70,8 +76,30 @@ public class Board {
      * @return conjunto de posiciones alcanzables
      */
     public Set<Position> getReachablePositions(Position origin, int movementPoints) {
-        // ...
-        return Set.of();
+        Queue<Node> queue = new LinkedList<>();
+        Set<Position> visited = new HashSet<>();
+        Set<Position> result = new HashSet<>();
+
+        queue.add(new Node(origin, 0));
+        visited.add(origin);
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+            for (Direction direction : Direction.values()) {
+                Position neighbor = current.position().translate(direction);
+
+                if (!isWithinBounds(neighbor)) continue;
+                if (visited.contains(neighbor)) continue;
+                if (!getCellAt(neighbor).isNavigable()) continue;
+                if (current.steps() + 1 > movementPoints) continue;
+
+                visited.add(neighbor);
+                result.add(neighbor);
+                queue.add(new Node(neighbor, current.steps() + 1));
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -83,7 +111,14 @@ public class Board {
      * @throws IllegalArgumentException si el destino no es navegable
      */
     public void moveShip(Ship ship, Position destination) {
-        // ...
+        // CORREGIDO PoLK: guardamos la posición en variable local en lugar de encadenar ship.getPosition() dos veces
+        Position origin = ship.getPosition();
+
+        if (!getCellAt(destination).isNavigable()) throw new IllegalArgumentException("Destination is not navigable");
+
+        getCellAt(origin).removeShip();
+        getCellAt(destination).placeShip(ship);
+        ship.setPosition(destination);
     }
 
     /**
@@ -93,7 +128,16 @@ public class Board {
      * @param ship barco que acaba de moverse
      */
     public void applyMarineCurrentIfPresent(Ship ship) {
-        // ...
+        // CORREGIDO PoLK: guardamos posición y celda en variables locales en lugar de encadenar
+        Position current = ship.getPosition();
+        Cell cell = getCellAt(current);
+
+        if (cell.getTerrain() != TerrainType.MARINE_CURRENT) return;
+
+        Position pushed = current.translate(cell.getCurrentDirection());
+        if (isWithinBounds(pushed) && getCellAt(pushed).isNavigable()) {
+            moveShip(ship, pushed);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -109,8 +153,14 @@ public class Board {
      * @return lista de barcos enemigos atacables
      */
     public List<Ship> getTargetsInRange(Ship attacker, int range, Player enemy) {
-        // ...
-        return List.of();
+        List<Ship> targets = new ArrayList<>();
+        for (Ship ship : enemy.getActiveFleet()) {
+            // CORREGIDO PoLK: delegamos en Ship.isInRange en lugar de encadenar attacker.getPosition().distanceTo(...)
+            if (attacker.isInRange(ship, range)) {
+                targets.add(ship);
+            }
+        }
+        return targets;
     }
 
     // -------------------------------------------------------------------------
@@ -124,8 +174,15 @@ public class Board {
      * @return lista de posiciones libres navegables
      */
     public List<Position> getFreeNavigablePositions() {
-        // ...
-        return List.of();
+       List<Position> freeNavigablePositions = new ArrayList<>();
+       for (int i = 0; i < rows; i++) {
+           for (int j = 0; j < cols; j++) {
+               if (grid[i][j].isNavigable()) {
+                   freeNavigablePositions.add(new Position(i, j));
+               }
+           }
+       }
+       return freeNavigablePositions;
     }
 
     /**
@@ -135,8 +192,9 @@ public class Board {
      * @return posición aleatoria libre
      */
     public Position getRandomFreePosition() {
-        // usar Random sobre getFreeNavigablePositions()
-        return null;
+        List<Position> free = getFreeNavigablePositions();
+        if (free.isEmpty()) throw new IllegalArgumentException("No navigable positions available");
+        return free.get(new Random().nextInt(free.size()));
     }
 
     /**
@@ -146,7 +204,11 @@ public class Board {
      * @param ship barco a hundir
      */
     public void sinkShip(Ship ship) {
-        // ...
+        Cell cell = getCellAt(ship.getPosition());
+        if (ship.isCarryingTreasure()) {
+            cell.placeFloatingTreasure(ship.dropTreasure());
+        }
+        cell.removeShip();
     }
 
     public int getRows() { return rows; }

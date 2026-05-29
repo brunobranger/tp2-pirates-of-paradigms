@@ -112,6 +112,10 @@ public abstract class Ship {
         currentHp = Math.min(maxHp, currentHp + amount);
     }
 
+    public boolean isInRange(Ship other, int range) {
+        return position.distanceTo(other.getPosition()) <= range;
+    }
+
     // -------------------------------------------------------------------------
     // Movimiento y acciones por turno
     // -------------------------------------------------------------------------
