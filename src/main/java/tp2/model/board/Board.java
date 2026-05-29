@@ -111,13 +111,13 @@ public class Board {
      * @throws IllegalArgumentException si el destino no es navegable
      */
     public void moveShip(Ship ship, Position destination) {
-        Cell origin = getCellAt(ship.getPosition());
-        Cell dest = getCellAt(destination);
+        // CORREGIDO PoLK: guardamos la posición en variable local en lugar de encadenar ship.getPosition() dos veces
+        Position origin = ship.getPosition();
 
-        if (!dest.isNavigable()) throw new IllegalArgumentException("Destination is not navigable");
+        if (!getCellAt(destination).isNavigable()) throw new IllegalArgumentException("Destination is not navigable");
 
-        origin.removeShip();
-        dest.placeShip(ship);
+        getCellAt(origin).removeShip();
+        getCellAt(destination).placeShip(ship);
         ship.setPosition(destination);
     }
 
@@ -128,10 +128,13 @@ public class Board {
      * @param ship barco que acaba de moverse
      */
     public void applyMarineCurrentIfPresent(Ship ship) {
-        Cell cell = getCellAt(ship.getPosition());
+        // CORREGIDO PoLK: guardamos posición y celda en variables locales en lugar de encadenar
+        Position current = ship.getPosition();
+        Cell cell = getCellAt(current);
+
         if (cell.getTerrain() != TerrainType.MARINE_CURRENT) return;
 
-        Position pushed = ship.getPosition().translate(cell.getCurrentDirection());
+        Position pushed = current.translate(cell.getCurrentDirection());
         if (isWithinBounds(pushed) && getCellAt(pushed).isNavigable()) {
             moveShip(ship, pushed);
         }
@@ -152,7 +155,8 @@ public class Board {
     public List<Ship> getTargetsInRange(Ship attacker, int range, Player enemy) {
         List<Ship> targets = new ArrayList<>();
         for (Ship ship : enemy.getActiveFleet()) {
-            if (attacker.getPosition().distanceTo(ship.getPosition()) <= range) {
+            // CORREGIDO PoLK: delegamos en Ship.isInRange en lugar de encadenar attacker.getPosition().distanceTo(...)
+            if (attacker.isInRange(ship, range)) {
                 targets.add(ship);
             }
         }
