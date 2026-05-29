@@ -2,7 +2,7 @@ package tp2.config;
 
 import java.io.IOException;
 
-import tp2.model.GameState;
+import tp2.model.game.GameState;
 import tp2.model.board.Board;
 import tp2.model.player.Faction;
 import tp2.model.player.Player;

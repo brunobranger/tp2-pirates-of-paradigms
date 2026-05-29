@@ -1,6 +1,6 @@
 package tp2.model.event;
 
-import tp2.model.GameState;
+import tp2.model.game.GameState;
 
 /**
  * Interfaz para todos los eventos aleatorios del juego.

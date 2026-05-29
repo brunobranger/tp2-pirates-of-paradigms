@@ -1,6 +1,6 @@
 package tp2.view;
 
-import tp2.model.GameState;
+import tp2.model.game.GameState;
 import tp2.model.board.Cell;
 import tp2.model.board.TerrainType;
 

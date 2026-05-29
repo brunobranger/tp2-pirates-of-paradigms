@@ -3,8 +3,8 @@ package tp2.view;
 import java.util.List;
 import java.util.Set;
 
-import tp2.model.GameState;
-import tp2.model.VictoryCondition;
+import tp2.model.game.GameState;
+import tp2.model.game.VictoryCondition;
 import tp2.model.board.Position;
 import tp2.model.combat.AttackResult;
 import tp2.model.event.EventResult;

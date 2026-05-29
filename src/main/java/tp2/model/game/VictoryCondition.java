@@ -1,4 +1,4 @@
-package tp2.model;
+package tp2.model.game;
 
 /**
  * Las tres condiciones de victoria definidas en el enunciado.

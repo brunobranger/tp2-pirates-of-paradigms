@@ -1,6 +1,6 @@
 package tp2.model.event;
 
-import tp2.model.GameState;
+import tp2.model.game.GameState;
 
 import java.util.List;
 import java.util.Random;
