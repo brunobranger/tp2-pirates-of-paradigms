@@ -10,17 +10,14 @@ import tp2.model.treasure.DynasticTreasure;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 /**
  * Representa a un capitán pirata (jugador).
- *
  * Responsabilidades:
  *   - Mantener su flota activa.
  *   - Gestionar su pool de recursos (oro y madera).
  *   - Conocer la posición de su puerto inicial.
  *   - Conocer su tesoro dinástico propio.
- *
  * UML: Player --agrega--> List<Ship> (agregación: los barcos existen como entidades propias).
  *      Player --compone--> ResourcePool (el pool no existe sin el jugador).
  *      Player --asocia--> DynasticTreasure (lo conoce pero no lo posee físicamente).
@@ -46,6 +43,15 @@ public class Player {
     // -------------------------------------------------------------------------
     // Flota
     // -------------------------------------------------------------------------
+
+    /**
+     * Comprobar que el baco pertenece a la embarcacion
+     * @param ship barco que pertenece a una armada o conjunto
+     * @return true si pertenece a la armada
+     */
+    public boolean hasShip(Ship ship) {
+        return getActiveFleet().contains(ship);
+    }
 
     /**
      * Agrega un barco a la flota del jugador.
