@@ -6,15 +6,14 @@ import tp2.model.board.Position;
  * Tesoro flotante generado por el evento "Tesoro flotante".
  * Distinto al DynasticTreasure: este es temporal, tiene un timer de desaparición
  * y otorga oro + reparación al capturarlo.
- *
  * Principio: SRP — separar de DynasticTreasure porque tienen ciclo de vida y
  * propósito completamente distintos.
  */
 public class FloatingTreasure {
 
-    private Position position;
-    private int turnsUntilDisappear; // desaparece si nadie lo reclama
-    private boolean claimed;
+    private final Position position;
+    private final int turnsUntilDisappear; // desaparece si nadie lo reclama
+    private final boolean claimed;
 
     public FloatingTreasure(Position position, int turnsUntilDisappear) {
         this.position = position;
@@ -42,6 +41,10 @@ public class FloatingTreasure {
     public void claim() {
         // claimed = true
     }
+
+    // -------------------------------------------------------------------------
+    // Getters
+    // -------------------------------------------------------------------------
 
     public Position getPosition() { return position; }
     public boolean isClaimed() { return claimed; }
