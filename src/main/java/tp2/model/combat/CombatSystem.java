@@ -23,7 +23,7 @@ public class CombatSystem {
         this.board = board;
     }
 
-    /**
+    /***
      * Ejecuta un ataque del {@code attacker} al {@code defender}.
      * Verifica rango, calcula daño y aplica resultado.
      *
