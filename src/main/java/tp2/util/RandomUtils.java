@@ -23,7 +23,7 @@ public final class RandomUtils {
      */
     public static <T> T pickRandom(List<T> list) {
         if (list.isEmpty()) throw new IllegalArgumentException("Lista vacía");
-        return list.get(RANDOM.nextInt(list.size()));
+        return list.get(nextInt(list.size()));
     }
 
     /**
