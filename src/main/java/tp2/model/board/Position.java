@@ -1,5 +1,7 @@
 package tp2.model.board;
 
+import java.util.Objects;
+
 /**
  * Value Object que representa una posición (fila, columna) en el tablero.
  *
@@ -32,8 +34,9 @@ public final class Position {
      * @return distancia de Chebyshev entre this y other
      */
     public int distanceTo(Position other) {
-        // ...
-        return 0;
+        int rowDiff = Math.abs(this.row - other.row);
+        int colDiff = Math.abs(this.col - other.col);
+        return Math.max(rowDiff, colDiff);
     }
 
     /**
@@ -43,8 +46,7 @@ public final class Position {
      * @return true si son adyacentes
      */
     public boolean isAdjacentTo(Position other) {
-        // ...
-        return false;
+        return this.distanceTo(other) == 1;
     }
 
     /**
@@ -54,20 +56,20 @@ public final class Position {
      * @return nueva posición resultante
      */
     public Position translate(Direction direction) {
-        // ...
-        return null;
+        return new Position(this.row + direction.getRowDelta(), this.col + direction.getColDelta());
     }
 
     @Override
     public boolean equals(Object o) {
-        // ...
-        return false;
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        Position other = (Position) o;
+        return this.row == other.row && this.col == other.col;
     }
 
     @Override
     public int hashCode() {
-        // ...
-        return 0;
+        return Objects.hash(row, col);
     }
 
     @Override

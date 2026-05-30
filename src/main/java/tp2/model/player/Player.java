@@ -5,10 +5,12 @@ import tp2.model.resource.ResourcePool;
 import tp2.model.resource.ResourceCosts;
 import tp2.model.ship.Ship;
 import tp2.model.ship.Flagship;
+import tp2.model.ship.ShipType;
 import tp2.model.treasure.DynasticTreasure;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Representa a un capitán pirata (jugador).
@@ -51,7 +53,7 @@ public class Player {
      * @param ship barco a agregar
      */
     public void addShip(Ship ship) {
-        // ...
+        fleet.add(ship);
     }
 
     /**
@@ -60,15 +62,14 @@ public class Player {
      * @param ship barco a eliminar
      */
     public void removeShip(Ship ship) {
-        // ...
+        if (!fleet.remove(ship)) throw new IllegalStateException("Ship not found in fleet");
     }
 
     /**
      * @return lista inmutable de barcos activos (no hundidos)
      */
     public List<Ship> getActiveFleet() {
-        // filtrar fleet por !ship.isSunk()
-        return List.copyOf(fleet);
+        return fleet.stream().filter(fleet -> !fleet.isSunk()).toList();
     }
 
     /**
@@ -76,24 +77,29 @@ public class Player {
      * @throws IllegalStateException si no se encuentra (nunca debería ocurrir al inicio)
      */
     public Flagship getFlagship() {
-        // buscar en fleet por instanceof Flagship
-        return null;
+        for (Ship ship : fleet) {
+            if (ship.getType() == ShipType.FLAGSHIP) {
+                return (Flagship) ship;
+            }
+        }
+        throw new IllegalStateException("Flagship not found");
     }
 
     /**
+     * Comprueba si el buque insignia se encuentra hundido
      * @return true si el barco insignia fue hundido
      */
     public boolean isFlagshipSunk() {
-        // ...
-        return false;
+        Flagship flagship = getFlagship();
+        return flagship.isSunk();
     }
 
     /**
-     * Reinicia el estado de turno de ...s los barcos activos.
+     * Reinicia el estado de turno de los barcos activos.
      * Llamado al inicio de cada turno de este jugador.
      */
     public void resetFleetTurnState() {
-        // fleet.forEach(Ship::resetTurnState)
+        fleet.forEach(Ship :: resetTurnState);
     }
 
     // -------------------------------------------------------------------------
@@ -107,23 +113,32 @@ public class Player {
     // -------------------------------------------------------------------------
 
     /**
-     * El jugador se rinde. Condición de derrota voluntaria.
+     * Establecer rendicion voluntaria por el jugador.
      */
     public void surrender() {
         this.surrendered = true;
     }
 
+    /**
+     * Retorno de estado de rendicion del jugador.
+     * @return true si se ha rendido, false de caso contrario.
+     */
     public boolean hasSurrendered() { return surrendered; }
 
     // -------------------------------------------------------------------------
-    // Getters / setters
+    // Getters
     // -------------------------------------------------------------------------
 
     public String getName() { return name; }
     public Faction getFaction() { return faction; }
     public Position getHomePortPosition() { return homePortPosition; }
-    public void setHomePortPosition(Position pos) { this.homePortPosition = pos; }
     public DynasticTreasure getOwnTreasure() { return ownTreasure; }
+
+    // -------------------------------------------------------------------------
+    // Setters
+    // -------------------------------------------------------------------------
+
+    public void setHomePortPosition(Position pos) { this.homePortPosition = pos; }
     public void setOwnTreasure(DynasticTreasure treasure) { this.ownTreasure = treasure; }
 
     @Override

@@ -119,6 +119,11 @@ public class ConsoleView implements GameView {
     }
 
     @Override
+    public void showReachablePositions(Set<Position> reachable) {
+
+    }
+
+    @Override
     public void showAttackResult(AttackResult result) {
         // imprimir result.toString() o formato propio
     }
