@@ -181,7 +181,6 @@ class FavorableWind implements GameEvent {
 /**
  * Incendio en cubierta: afecta a un barco aleatorio.
  * El barco pierde HP por turno y no puede atacar hasta que se apague.
- *
  * Nota: este evento aplica FireEffect sobre un barco;
  * la acción "apagar incendio" se gestiona en GameController.
  */

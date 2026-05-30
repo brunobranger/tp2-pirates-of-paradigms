@@ -9,20 +9,16 @@ import tp2.model.player.Player;
 
 /**
  * Carga el estado inicial del juego desde archivos de configuración.
- *
  * Responsabilidades:
  *   - Leer el archivo de mapa y construir el Board.
  *   - Leer el archivo de flotas y construir las listas de Ships por jugador.
  *   - Construir el GameState inicial.
- *
  * Principio: SRP — separado del modelo y del controlador; solo lee y construye.
  * Principio: DIP — el controlador depende de GameLoader (abstracción),
  *                   no del formato de archivo concreto.
- *
  * Hipótesis de formato (documentar en informe):
  *   - Mapa: JSON con filas, columnas y lista de celdas especiales.
  *   - Flotas: JSON con lista de barcos por bando (tipo y nombre).
- *
  * Ejemplo de mapa JSON (resources/maps/default.json):
  * {
  *   "rows": 10,
@@ -50,6 +46,8 @@ public class GameLoader {
      * @throws IOException si no se puede leer algún archivo
      */
     public GameState loadGame(String mapFileName, String fleetFileName) throws IOException {
+        // [!] Con los cambios generados en GameState el constructor es: GameState(board, players)
+
         // 
         // Board board = loadBoard(mapFileName)
         // Player p1 = loadPlayer(fleetFileName, Faction.CRIMSON_BROTHERHOOD)
