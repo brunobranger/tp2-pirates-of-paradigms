@@ -33,14 +33,21 @@ public class CombatSystem {
      * @throws IllegalArgumentException si el defensor está fuera de rango
      */
     public AttackResult attack(Ship attacker, Ship defender) {
-        //
-        // 1. verificar rango: attacker.getPosition().distanceTo(defender.getPosition()) <= attacker.getEffectiveRange()
-        // 2. int damage = Math.max(0, attacker.getAtk() - defender.getDef())
-        // 3. int effectiveDamage = defender.receiveDamage(attacker.getAtk())
-        // 4. attacker.registerAttack()
-        // 5. si defender.isSunk() -> board.sinkShip(defender)
-        // 6. retornar AttackResult
-        return null;
+
+        boolean defenderSunk = false;
+        if (!attacker.canAttack())
+            throw new RuntimeException("El barco elegido no puede atacar");
+        if (isInRange(attacker, defender))
+            throw new RuntimeException("El barco a atacar está fuera de rango");
+
+        int effectiveDamage = defender.receiveDamage(attacker.getEffectiveAttack());
+        attacker.registerAttack();
+        if(defender.isSunk()) {
+            board.sinkShip(defender);
+            defenderSunk = true;
+        }
+
+        return new AttackResult(attacker, defender, effectiveDamage, defenderSunk);
     }
 
     /**
@@ -51,7 +58,6 @@ public class CombatSystem {
      * @return true si el defensor está dentro del rango efectivo
      */
     public boolean isInRange(Ship attacker, Ship defender) {
-        // ...
-        return false;
+        return attacker.getPosition().distanceTo(defender.getPosition()) <= attacker.getEffectiveRange();
     }
 }
