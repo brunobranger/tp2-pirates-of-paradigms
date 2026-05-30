@@ -1,21 +1,20 @@
 package tp2.controller;
 
 import tp2.controller.command.*;
-import tp2.model.GameState;
-import tp2.model.board.Board;
+import tp2.model.game.GameState;
 import tp2.model.board.Position;
-import tp2.model.combat.AttackResult;
 import tp2.model.combat.CombatSystem;
 import tp2.model.event.EventManager;
 import tp2.model.event.GameEvent;
 import tp2.model.player.Player;
 import tp2.model.ship.Ship;
-import tp2.config.GameLoader;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
 import java.util.List;
 import java.util.Set;
+
+import static tp2.util.RandomUtils.coinFlip; // import estatico de Coin
 
 /**
  * Controlador principal del juego. Patrón MVC: coordina Model (GameState)
@@ -26,7 +25,6 @@ import java.util.Set;
  *   - Delegar en GameState las modificaciones del modelo.
  *   - Delegar en GameView la presentación y el input.
  *   - Orquestar el sistema de combate y eventos.
- *
  * Principio: SRP — el controlador no imprime ni calcula daño; delega.
  * Principio: DIP — depende de GameView (interfaz), no de una consola específica.
  * Patrón Command: cada acción del jugador se encapsula en un ShipCommand.
@@ -59,16 +57,17 @@ public class GameController {
         while (!gameState.isGameOver()) {
             playTurn();
         }
-        view.showVictory(gameState.getWinner(), gameState.getVictoryCondition());
+        view.showVictory(gameState.getPlayerWinner(), gameState.getVictoryCondition());
     }
 
     /**
      * Sorteo inicial: decide al azar quién comienza.
      */
     private void decideFirstPlayer() {
-        if (tp2.util.RandomUtils.coinFlip()) {
-            gameState.setCurrentPlayer(gameState.getPlayer2());
-        }
+        List<Player> players = gameState.getPlayers();
+
+        Player firstPlayer = coinFlip() ? players.get(1) : players.get(0);
+        gameState.setCurrentPlayer(firstPlayer);
         view.showFirstPlayer(gameState.getCurrentPlayer());
     }
 
@@ -202,7 +201,6 @@ public class GameController {
     /**
      * Verifica canExecute y ejecuta el comando.
      * Si no puede ejecutarse, muestra error y vuelve al menú (no termina el turno).
-     *
      * Principio Tell Don't Ask: el comando sabe si puede ejecutarse,
      * el controller no inspecciona el estado para decidirlo.
      */
