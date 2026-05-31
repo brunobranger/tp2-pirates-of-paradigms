@@ -1,60 +1,53 @@
-package tp2.model;
+package tp2.model.game;
 
 import tp2.model.board.Board;
 import tp2.model.player.Player;
-import tp2.model.treasure.DynasticTreasure;
 import tp2.model.treasure.FloatingTreasure;
+import tp2.model.victory.FlagshipSunkStrategy;
+import tp2.model.victory.SurrenderStrategy;
+import tp2.model.victory.TreasureInPortStrategy;
+import tp2.model.victory.VictoryStrategy;
 
 import java.util.List;
 import java.util.ArrayList;
 
 /**
  * Estado central del juego. Modelo en el patrón MVC/MVP.
- *
  * Contiene:
  *   - El tablero (Board)
- *   - Los dos jugadores (Player)
  *   - El turno actual y quién juega
- *   - Los tesoros dinásticos
  *   - Tesoros flotantes activos (evento)
  *   - Condición de victoria detectada
- *
  * Principio: SRP — GameState es el modelo puro. No imprime nada ni lee input.
  * El GameController lo modifica; la View lo lee para mostrarlo.
- *
- * UML: GameState --compone--> Board, Player x2, DynasticTreasure x2.
- *      GameController --usa--> GameState (asociación).
  */
 public class GameState {
-
+    private final List<Player> players;
+    private final List<FloatingTreasure> floatingTreasures;
+    private final List<VictoryStrategy> victoryStrategies;
     private final Board board;
-    private final Player player1;
-    private final Player player2;
-
     private Player currentPlayer;
     private int turnNumber;
-
-    private final DynasticTreasure treasure1; // del player1
-    private final DynasticTreasure treasure2; // del player2
-
-    private final List<FloatingTreasure> floatingTreasures;
-
-    private VictoryCondition victoryCondition; // null si no terminó
-    private Player winner;                      // null si no terminó
+    private VictoryCondition victoryCondition;
+    private Player playerWinner;
 
     // Flag especial de Viento Favorable: este turno se puede mover y atacar
     private boolean canMoveAndAttackSameTurn;
 
-    public GameState(Board board, Player player1, Player player2,
-                     DynasticTreasure treasure1, DynasticTreasure treasure2) {
+
+    public GameState(Board board, List<Player> players) {
         this.board = board;
-        this.player1 = player1;
-        this.player2 = player2;
-        this.treasure1 = treasure1;
-        this.treasure2 = treasure2;
+        this.players = new ArrayList<>(players);
+        this.currentPlayer = players.isEmpty() ? null : players.getFirst();
         this.floatingTreasures = new ArrayList<>();
         this.turnNumber = 1;
-        this.currentPlayer = player1; // se sobreescribirá tras sorteo inicial
+        this.victoryCondition = null;
+        this.playerWinner = null;
+        this.victoryStrategies = List.of(
+          new FlagshipSunkStrategy(),
+          new SurrenderStrategy(),
+          new TreasureInPortStrategy()
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -64,24 +57,27 @@ public class GameState {
     /**
      * Evalúa si alguna condición de victoria se cumplió y actualiza winner.
      * Debe llamarse al finalizar cada acción que pueda cambiar el estado.
-     *
      * Condiciones (enunciado):
      *   1. El barco insignia rival fue hundido.
      *   2. Se capturó el tesoro dinástico enemigo y se llegó al propio puerto.
      *   3. El rival se rindió.
      */
     public void checkVictoryConditions() {
-        // 
-        // if (player1.isFlagshipSunk()) -> winner = player2, condition = FLAGSHIP_SUNK
-        // if (player2.isFlagshipSunk()) -> winner = player1, condition = FLAGSHIP_SUNK
-        // if (player1.hasSurrendered()) -> winner = player2, condition = SURRENDER
-        // if (player2.hasSurrendered()) -> winner = player1, condition = SURRENDER
-        // Condición de tesoro: verificar si treasure entregado en puerto propio
+        if (isGameOver()) return;
+
+        for (VictoryStrategy strategy : victoryStrategies) {
+            Player winner = strategy.check(this);
+            if (winner != null) {
+                setPlayerWinner(winner);
+                setVictoryCondition(strategy.getConditionType());
+                break;
+            }
+        }
     }
 
-    /** @return true si el juego terminó */
+    /** @return true si ya hay un jugado asentado */
     public boolean isGameOver() {
-        return victoryCondition != null;
+        return playerWinner != null;
     }
 
     // -------------------------------------------------------------------------
@@ -93,11 +89,17 @@ public class GameState {
      * cuando ambos jugadores completaron el suyo.
      */
     public void switchTurn() {
-        // 
-        // currentPlayer = (currentPlayer == player1) ? player2 : player1;
-        // if (currentPlayer == player1) turnNumber++;
-        // currentPlayer.resetFleetTurnState();
-        // canMoveAndAttackSameTurn = false;
+        if(isGameOver()) return;
+
+        List<Player> playerList = getPlayers();
+
+        int nextIndex = (playerList.indexOf(this.currentPlayer) + 1) % playerList.size();
+        setCurrentPlayer(playerList.get(nextIndex));
+
+        if (nextIndex == 0) this.turnNumber++;
+
+        this.currentPlayer.resetFleetTurnState();
+        setCanMoveAndAttackSameTurn(false);
     }
 
     /**
@@ -107,7 +109,10 @@ public class GameState {
      * @return el otro jugador
      */
     public Player getOpponentOf(Player player) {
-        return player == player1 ? player2 : player1;
+        return players.stream()
+                .filter(p -> !p.equals(player))
+                .findFirst()
+                .orElse(null);
     }
 
     // -------------------------------------------------------------------------
@@ -128,6 +133,9 @@ public class GameState {
      * Llamado al finalizar cada turno.
      */
     public void cleanExpiredFloatingTreasures() {
+        for (FloatingTreasure treasure : floatingTreasures) {
+            treasure.tick();
+        }
         floatingTreasures.removeIf(FloatingTreasure::isGone);
     }
 
@@ -135,17 +143,21 @@ public class GameState {
     // Getters
     // -------------------------------------------------------------------------
 
-    public Board getBoard() { return board; }
-    public Player getPlayer1() { return player1; }
-    public Player getPlayer2() { return player2; }
-    public Player getCurrentPlayer() { return currentPlayer; }
-    public void setCurrentPlayer(Player p) { this.currentPlayer = p; }
-    public int getTurnNumber() { return turnNumber; }
-    public DynasticTreasure getTreasure1() { return treasure1; }
-    public DynasticTreasure getTreasure2() { return treasure2; }
+    public List<Player> getPlayers() { return List.copyOf(players); }
+    public Board getBoard() { return this.board; }
+    public int getTurnNumber() { return this.turnNumber; }
+    public Player getCurrentPlayer() { return this.currentPlayer; }
     public List<FloatingTreasure> getFloatingTreasures() { return List.copyOf(floatingTreasures); }
-    public VictoryCondition getVictoryCondition() { return victoryCondition; }
-    public Player getWinner() { return winner; }
+    public VictoryCondition getVictoryCondition() { return this.victoryCondition; }
+    public Player getPlayerWinner() { return this.playerWinner; }
+
+    // -------------------------------------------------------------------------
+    // Setters
+    // -------------------------------------------------------------------------
+
+    public void setVictoryCondition(VictoryCondition condition) { this.victoryCondition = condition; }
+    public void setPlayerWinner(Player player) { this.playerWinner = player; }
     public boolean canMoveAndAttackSameTurn() { return canMoveAndAttackSameTurn; }
     public void setCanMoveAndAttackSameTurn(boolean v) { this.canMoveAndAttackSameTurn = v; }
+    public void setCurrentPlayer(Player p) { this.currentPlayer = p; }
 }
