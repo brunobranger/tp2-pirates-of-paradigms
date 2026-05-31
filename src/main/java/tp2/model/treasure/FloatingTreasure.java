@@ -5,15 +5,14 @@ import tp2.model.board.Position;
 /**
  * Tesoro flotante generado por el evento "Tesoro flotante".
  * Distinto al DynasticTreasure: este es temporal, tiene un timer de desaparición
- * y otorga oro + reparación al capturarlo.
  * Principio: SRP — separar de DynasticTreasure porque tienen ciclo de vida y
  * propósito completamente distintos.
  */
 public class FloatingTreasure {
 
     private final Position position;
-    private final int turnsUntilDisappear; // desaparece si nadie lo reclama
-    private final boolean claimed;
+    private int turnsUntilDisappear;
+    private boolean claimed;
 
     public FloatingTreasure(Position position, int turnsUntilDisappear) {
         this.position = position;
@@ -21,17 +20,15 @@ public class FloatingTreasure {
         this.claimed = false;
     }
 
+    // -------------------------------------------------------------------------
+    // Behavior methods
+    // -------------------------------------------------------------------------
+
     /**
      * Avanza un turno. Si llegó a 0, el tesoro desaparece.
      */
     public void tick() {
-        // turnsUntilDisappear--
-    }
-
-    /** @return true si el tesoro ya no está disponible (reclamado o expirado) */
-    public boolean isGone() {
-        // claimed || turnsUntilDisappear <= 0
-        return false;
+        setTurnsUntilDisappear();
     }
 
     /**
@@ -39,14 +36,55 @@ public class FloatingTreasure {
      * Las recompensas las aplica el GameController (SRP).
      */
     public void claim() {
-        // claimed = true
+        setClaimed();
+    }
+
+    // -------------------------------------------------------------------------
+    // State methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return es true si es reclamado, false contrariamente.
+     */
+    public boolean isClaimed() { return claimed; }
+
+    /** @return true si el tesoro ya no está disponible (reclamado o expirado) */
+    public boolean isGone() {
+        return getTurnsUntilDisappear() == 0 || isClaimed();
     }
 
     // -------------------------------------------------------------------------
     // Getters
     // -------------------------------------------------------------------------
 
+    /**
+     * Devuelve la posicion del tesoro flotante.
+     * @return posicion del tesoro flotante
+     */
     public Position getPosition() { return position; }
-    public boolean isClaimed() { return claimed; }
+
+    /**
+     * Devuelve la cantidad de la turnera actual
+     * @return cantidad neta de turnos restantes
+     */
     public int getTurnsUntilDisappear() { return turnsUntilDisappear; }
+
+    // -------------------------------------------------------------------------
+    // Setters
+    // -------------------------------------------------------------------------
+
+    /**
+     * Establece el estado del tesoro flotante en verdadero.
+     */
+    private void setClaimed() {
+        this.claimed = !isClaimed();
+    }
+
+    /**
+     * Disminuye el contador de turnos hasta
+     * desaparecer el tesoro flotante.
+     */
+    private void setTurnsUntilDisappear() {
+        this.turnsUntilDisappear--;
+    }
 }
