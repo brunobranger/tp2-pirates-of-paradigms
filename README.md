@@ -97,7 +97,9 @@ Ver informe PDF adjunto.
 
 - **MVC**: separación entre `GameState` (modelo), `GameController` (controlador) y `GameView`/`ConsoleView` (vista).
 - **Strategy**: `GameEvent` — cada evento encapsula su propia lógica de aplicación.
+- **Strategy**: `GameState` — cada tipo de victoria, sabe como interactuar de cumplirse las condiciones y efectos puntuales.
 - **Strategy**: `ShipEffect` — cada efecto de estado sabe cómo modificar las estadísticas del barco.
+- **Singleton:** ...
 - **Factory Method**: `ShipFactory` — centraliza la creación de barcos por tipo.
 - **Value Object**: `Position`, `AttackResult`, `EventResult` — inmutables, sin identidad.
 
@@ -113,6 +115,8 @@ Ver informe PDF adjunto.
 ## Hipótesis tomadas
 
 <!-- Completar durante el desarrollo -->
+
+- Con respecto al caso de cuando un barco logra la condicion de victoria de capturar el tesoro enemigo y lo llevo correctamente hasta su base. No estaba bien definido y queda medio ambiguo cuando era soltar la carga o no por hundimiento del barco con el tesoro o por entregar al puerto el tesoro para ganar por lo que se hizo algo parecido a una sobre carga de metodos, pero en este caso con distinciones sutiles en el nombre para identificar sus acciones, solo cambian un aspecto booleano para indicar el aspecto de que si la carga se suelta o no, para el caso practico del barco queda en false, para hundimiento si cambia.
 
 - ...
 
