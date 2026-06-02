@@ -1,0 +1,56 @@
+@startuml
+skinparam ClassBackgroundColor #F9F9F9
+skinparam ClassBorderColor #333333
+
+' Referencias a elementos modelados en otros diagramas
+class GameState
+class Ship
+class CombatSystem
+class Position
+interface GameView
+
+class GameController {
+    - view: GameView
+    - state: GameState
+    + startGameLoop()
+    - handlePlayerTurn()
+}
+
+interface ShipCommand {
+    + canExecute(gameState: GameState): boolean
+    + execute(gameState: GameState)
+}
+
+class MoveCommand
+class AttackCommand
+class RepairCommand
+class BuyPortCommand
+class ExtinguishFireCommand
+
+' Realizaciones explícitas
+ShipCommand <|.. MoveCommand
+ShipCommand <|.. AttackCommand
+ShipCommand <|.. RepairCommand
+ShipCommand <|.. BuyPortCommand
+ShipCommand <|.. ExtinguishFireCommand
+
+' Relaciones principales del controlador
+GameController "1" --> "1" GameView
+GameController "1" --> "1" GameState
+
+' El controlador usa los comandos de forma polimórfica
+GameController ..> ShipCommand : ejecuta
+
+' Relaciones estructurales (estado encapsulado por los comandos)
+MoveCommand --> "1" Ship
+MoveCommand --> "1" Position
+
+AttackCommand --> "1" Ship
+AttackCommand --> "1" Ship
+AttackCommand --> "1" CombatSystem
+
+RepairCommand --> "1" Ship
+BuyPortCommand --> "1" Ship
+ExtinguishFireCommand --> "1" Ship
+
+@enduml
