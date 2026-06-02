@@ -1,0 +1,66 @@
+@startuml
+skinparam ClassBackgroundColor #F9F9F9
+skinparam ClassBorderColor #333333
+
+class GameState {
+    - turnNumber: int
+    + switchTurn()
+    + isGameOver(): boolean
+}
+
+class Board {
+    - rows: int
+    - cols: int
+    + getCellAt(pos: Position): Cell
+}
+
+class Cell {
+    + isOccupied(): boolean
+    + assignPortOwner(player: Player)
+}
+
+class Position {
+    - row: int
+    - col: int
+}
+
+enum TerrainType {
+    OPEN_SEA
+    STORM
+    PORT
+    FOG
+}
+
+class Player {
+    - name: String
+    - surrendered: boolean
+}
+
+' Referencias a elementos modelados en otros diagramas
+class Ship
+
+enum Faction {
+    CRIMSON_BROTHERHOOD
+    ABYSS_CROWN
+}
+
+class ResourcePool {
+    - gold: int
+    - wood: int
+}
+
+' Relaciones
+GameState "1" --> "1" Board
+GameState "1" o--> "*" Player
+
+Board "1" *--> "*" Cell
+Cell --> "1" TerrainType
+Cell --> "0..1" Player
+
+Player --> "1" Faction
+Player "1" *--> "1" ResourcePool
+Player --> "0..1" Position
+
+Player "1" o--> "*" Ship
+
+@enduml

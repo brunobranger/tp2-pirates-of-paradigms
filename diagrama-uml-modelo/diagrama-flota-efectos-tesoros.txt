@@ -1,0 +1,64 @@
+@startuml
+
+' Referencias a elementos modelados en otros diagramas
+class Player
+class Cell
+class Board
+
+abstract class Ship {
+    - name: String
+    - currentHp: int
+    + receiveDamage(damage: int): int
+    + addEffect(effect: ShipEffect)
+}
+class Flagship
+class Galleon
+class Frigate
+class Sloop
+
+interface ShipEffect {
+    + tick()
+    + isExpired(): boolean
+}
+class FireEffect
+class ImmobilizedEffect
+
+class DynasticTreasure {
+    - isFloating: boolean
+}
+
+class FloatingTreasure {
+    - amountGold: int
+}
+
+class CombatSystem {
+    + attack(attacker: Ship, defender: Ship): AttackResult
+}
+
+class AttackResult {
+    - damageDealt: int
+    - defenderSunk: boolean
+}
+
+' Herencias y realizaciones explícitas
+Ship <|-- Flagship
+Ship <|-- Galleon
+Ship <|-- Frigate
+Ship <|-- Sloop
+
+ShipEffect <|.. FireEffect
+ShipEffect <|.. ImmobilizedEffect
+
+' Relaciones
+Player "1" o--> "*" Ship
+Ship "1" o--> "*" ShipEffect
+
+DynasticTreasure --> "0..1" Ship
+Cell --> "0..1" Ship
+Cell --> "0..1" DynasticTreasure
+
+CombatSystem --> "1" Board
+AttackResult --> "1" Ship : attacker
+AttackResult --> "1" Ship : defender
+
+@enduml
