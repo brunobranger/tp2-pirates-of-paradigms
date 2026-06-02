@@ -110,6 +110,14 @@ Ver informe PDF adjunto.
 - **LSP**: todas las subclases de `Ship` pueden usarse donde se espera `Ship`.
 - **DIP**: `GameController` depende de `GameView` (interfaz), no de `ConsoleView`.
 
+### Diseño de View y Test
+
+- **MVC y DIP**: `GameController` usa la interfaz `GameView`; `ConsoleView` solo presenta información y captura elecciones.
+- **Command**: la vista muestra las acciones, pero no decide si pueden ejecutarse. Las reglas se validan en `MoveCommand`, `AttackCommand`, `RepairCommand`, `BuyPortCommand` y `ExtinguishFireCommand`.
+- **SRP**: `BoardRenderer` concentra la representación ASCII del tablero. `ConsoleView` no recorre archivos del sistema.
+- **Inyección de dependencias**: las listas de mapas y flotas disponibles se entregan a `ConsoleView` desde el punto de composición. La lectura de archivos corresponde a `GameLoader`.
+- **Tests automatizados**: las entradas y salidas de consola se inyectan como streams para probar la vista sin depender de una terminal interactiva.
+
 ---
 
 ## Hipótesis tomadas

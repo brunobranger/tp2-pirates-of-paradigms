@@ -1,72 +1,114 @@
 package tp2.view;
 
-import tp2.model.game.GameState;
+import tp2.model.board.Board;
 import tp2.model.board.Cell;
+import tp2.model.board.Position;
 import tp2.model.board.TerrainType;
+import tp2.model.game.GameState;
+import tp2.model.player.Player;
 
 /**
  * Renderizador ASCII del tablero.
- * Separado de ConsoleView para respetar SRP: ConsoleView orquesta el flujo,
- * BoardRenderer sabe cómo dibujar la grilla.
  *
- * Leyenda del enunciado:
- *   ~~  → mar abierto
- *   T   → tormenta
- *   P   → puerto
- *   N   → niebla
- *   A   → arrecife
- *   I   → isla
- *   MC  → corriente marina
- *   B1  → barco jugador 1
- *   B2  → barco jugador 2
- *   TR  → tesoro dinástico
- *   FT  → tesoro flotante
- *   KR  → Kraken
+ * Responsabilidad: transformar el estado actual del tablero en una
+ * representacion textual para consola, sin leer input ni modificar el modelo.
+ *
+ * Principio: SRP - {@link ConsoleView} coordina la presentacion y esta clase
+ * concentra exclusivamente el formato visual de la grilla.
  */
 public class BoardRenderer {
 
     /**
-     * Genera el string completo del tablero con leyenda para imprimir por consola.
+     * Genera la grilla completa con coordenadas y leyenda.
      *
-     * @param gameState estado del juego
-     * @return string multilínea con el tablero y la leyenda
+     * @param gameState estado actual de la partida
+     * @return representacion multilínea lista para imprimir
      */
     public String render(GameState gameState) {
-        //
-        // StringBuilder sb = new StringBuilder()
-        // Recorrer board.getRows() y board.getCols()
-        // Para cada celda: getCellSymbol(cell, gameState)
-        // Agregar leyenda al costado
-        return "";
+        Board board = gameState.getBoard();
+        StringBuilder result = new StringBuilder();
+
+        result.append("    ");
+        for (int col = 0; col < board.getCols(); col++) {
+            result.append(String.format("%-3d", col));
+        }
+        result.append(System.lineSeparator());
+
+        for (int row = 0; row < board.getRows(); row++) {
+            result.append(String.format("%-3d ", row));
+            for (int col = 0; col < board.getCols(); col++) {
+                Cell cell = board.getCellAt(new Position(row, col));
+                result.append(String.format("%-3s", getCellSymbol(cell, gameState)));
+            }
+            result.append(System.lineSeparator());
+        }
+
+        result.append(System.lineSeparator())
+                .append("Leyenda: ~~ mar | B1/B2 barco | T tormenta | P puerto | ")
+                .append("N niebla | A arrecife | MC corriente | I isla | ")
+                .append("TR tesoro dinastico | FT tesoro flotante")
+                .append(System.lineSeparator());
+        return result.toString();
     }
 
     /**
-     * Retorna el símbolo de 2 caracteres para una celda dada.
-     *
-     * @param cell      celda a representar
-     * @param gameState estado del juego (para saber qué jugador ocupa qué)
-     * @return símbolo de la celda
+     * Obtiene el simbolo visible de una celda.
+     * La prioridad visual es: barco, tesoro y finalmente terreno.
      */
     private String getCellSymbol(Cell cell, GameState gameState) {
-        // prioridad: barco > tesoro > terreno especial > mar abierto
-        return "~~";
+        if (cell.isOccupied()) {
+            return getShipSymbol(cell, gameState);
+        }
+        if (cell.getFloatingTreasure() != null || hasDynasticTreasure(cell.getPosition(), gameState)) {
+            return "TR";
+        }
+        if (hasFloatingTreasure(cell.getPosition(), gameState)) {
+            return "FT";
+        }
+        return getTerrainSymbol(cell.getTerrain());
     }
 
     /**
-     * Retorna el símbolo del tipo de terreno.
-     *
-     * @param terrain tipo de terreno
-     * @return símbolo correspondiente
+     * Identifica a que jugador pertenece el barco para representarlo como B1,
+     * B2, etc. B? se utiliza como respaldo ante un estado inconsistente.
+     */
+    private String getShipSymbol(Cell cell, GameState gameState) {
+        for (int index = 0; index < gameState.getPlayers().size(); index++) {
+            Player player = gameState.getPlayers().get(index);
+            if (player.hasShip(cell.getOccupant())) {
+                return "B" + (index + 1);
+            }
+        }
+        return "B?";
+    }
+
+    /** @return true si existe un tesoro dinastico visible en la posicion */
+    private boolean hasDynasticTreasure(Position position, GameState gameState) {
+        return gameState.getPlayers().stream()
+                .map(Player::getOwnTreasure)
+                .filter(treasure -> treasure != null && treasure.isOnMap())
+                .anyMatch(treasure -> position.equals(treasure.getPositionCarrierTreasure()));
+    }
+
+    /** @return true si existe un tesoro flotante activo en la posicion */
+    private boolean hasFloatingTreasure(Position position, GameState gameState) {
+        return gameState.getFloatingTreasures().stream()
+                .filter(treasure -> !treasure.isGone())
+                .anyMatch(treasure -> position.equals(treasure.getPosition()));
+    }
+
+    /**
+     * Traduce los tipos de terreno del modelo a simbolos compactos de consola.
      */
     private String getTerrainSymbol(TerrainType terrain) {
         return switch (terrain) {
             case OPEN_SEA       -> "~~";
-            case STORM          -> "T ";
-            case PORT           -> "P ";
-            case FOG            -> "N ";
-            case REEF           -> "A ";
+            case STORM          -> "T";
+            case PORT           -> "P";
+            case FOG            -> "N";
+            case REEF           -> "A";
             case MARINE_CURRENT -> "MC";
-            case ISLAND         -> "I ";
+            case ISLAND         -> "I";
         };
     }
 }
