@@ -1,5 +1,7 @@
 package tp2.model.resource;
 
+import tp2.config.GameConfig;
+
 /**
  * Pool de recursos global de un jugador: oro y madera.
  *
@@ -14,9 +16,22 @@ public class ResourcePool {
     private int gold;
     private int wood;
 
+    /**
+     * Inicializacion de constructor para recursos iniciales
+     * @param initialGold debe ser positivo
+     * @param initialWood debe ser positivo
+     */
     public ResourcePool(int initialGold, int initialWood) {
-        this.gold = initialGold;
-        this.wood = initialWood;
+        this.gold = setGold(initialGold);
+        this.wood = setWood(initialWood);
+    }
+
+    /**
+     * Sobrecarga de constructor para recursos predeterminados
+     */
+    public ResourcePool() {
+        this.gold = GameConfig.INITIAL_GOLD;
+        this.wood = GameConfig.INITIAL_WOOD;
     }
 
     // -------------------------------------------------------------------------
@@ -91,8 +106,22 @@ public class ResourcePool {
         // ...
     }
 
+    private int setWood(int initialWood) {
+        if (initialWood < 0) {
+            throw new RuntimeException("Invalid Wood");
+        }
+        return initialWood;
+    }
+
+    private int setGold(int initialGold) {
+        if (initialGold < 0) {
+            throw new RuntimeException("Invalid Gold");
+        }
+        return initialGold;
+    }
+
     @Override
     public String toString() {
-        return "Oro: " + gold + " | Madera: " + wood;
+        return "Oro: " + getGold() + " | Madera: " + getWood();
     }
 }

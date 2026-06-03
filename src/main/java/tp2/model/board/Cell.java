@@ -21,10 +21,10 @@ public class Cell {
 
     private final Position position;
     private TerrainType terrain;
-    private Ship occupant;           // null si no hay barco
-    private DynasticTreasure floatingTreasure; // null si no hay tesoro flotando
-    private Player portOwner;        // null si no es puerto o no tiene dueño
-    private Direction currentDirection; // solo relevante si terrain == MARINE_CURRENT
+    private Ship occupant;
+    private DynasticTreasure floatingTreasure;
+    private Player portOwner;
+    private Direction currentDirection;
 
     public Cell(Position position, TerrainType terrain) {
         this.position = position;

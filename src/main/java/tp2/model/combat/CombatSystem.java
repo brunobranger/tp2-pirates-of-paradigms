@@ -8,12 +8,6 @@ import tp2.model.board.Board;
  *
  * Patrón: se extrae la lógica de combate de Ship y Board para respetar SRP.
  * Ship sabe recibir daño; CombatSystem sabe las reglas del enfrentamiento.
- *
- * Flujo según enunciado:
- *   1. Verificar alcance.
- *   2. Calcular daño = ATK atacante - DEF defensor (mínimo 0).
- *   3. Aplicar daño al HP enemigo.
- *   4. Si HP == 0, el barco se hunde.
  */
 public class CombatSystem {
 

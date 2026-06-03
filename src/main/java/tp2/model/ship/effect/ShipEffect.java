@@ -11,7 +11,6 @@ import tp2.model.ship.Ship;
  *
  * Ejemplos de efectos: Incendio, Inmovilización, MovimientoReducido, AtaqueBloqueado.
  *
- * UML: Ship --tiene--> List<ShipEffect> (composición: los efectos viven con el barco).
  */
 public interface ShipEffect {
 

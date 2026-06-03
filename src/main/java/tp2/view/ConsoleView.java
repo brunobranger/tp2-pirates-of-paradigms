@@ -21,10 +21,8 @@ import java.util.function.Function;
 
 /**
  * Implementacion por consola de {@link GameView}.
- *
  * Responsabilidad: mostrar informacion de la partida y transformar el input
  * del usuario en elecciones simples para el controlador.
- *
  * Principios:
  *   - SRP: no ejecuta acciones ni modifica el estado del juego.
  *   - DIP: el controlador depende de GameView y no de esta implementacion.
@@ -134,7 +132,6 @@ public class ConsoleView implements GameView {
 
     @Override
     public ShipAction askShipAction(Ship ship, GameState gameState) {
-        // La vista ofrece acciones. Los Command validan si pueden ejecutarse.
         List<ShipAction> actions = new ArrayList<>();
         actions.add(ShipAction.MOVE);
         actions.add(ShipAction.ATTACK);
@@ -347,7 +344,6 @@ public class ConsoleView implements GameView {
                     return options.get(index);
                 }
             } catch (NumberFormatException ignored) {
-                // Report the same user-facing validation error below.
             }
             showInvalidOption();
         }

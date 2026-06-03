@@ -4,42 +4,27 @@ import tp2.model.board.Position;
 import tp2.model.ship.effect.ShipEffect;
 import tp2.model.treasure.DynasticTreasure;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Clase abstracta base para todos los tipos de barco.
- *
- * Herencia (is-a): Balandra, Fragata, Galeón y BarcoInsignia extienden Ship.
  * Cada subclase define sus estadísticas base (Template Method implícito).
- *
  * Principio: LSP — cualquier Ship puede usarse donde se espera un Ship.
  * Principio: OCP — agregar un nuevo tipo de barco = nueva subclase, sin tocar Ship.
- *
- * UML: Player --agrupa--> List<Ship> (agregación, el Ship puede existir solo).
- *      Ship --transporta--> DynasticTreasure (asociación opcional).
- *
  * Estado de turno encapsulado en ShipTurnState para SRP.
  */
 public abstract class Ship {
 
-    // Identificación
     private final String name;
-
-    // Estadísticas base (definidas por subclase)
     private int currentHp;
     private final int maxHp;
     private final int atk;
     private final int def;
     private final int mov;
     private final int rng;
-
-    // Posición actual en el tablero
     private Position position;
-
-    // Tesoro que transporta (null si ninguno)
     private DynasticTreasure carriedTreasure;
-
-    // Estado interno de turno
     private boolean hasMovedThisTurn;
     private boolean hasAttackedThisTurn;
 
@@ -54,7 +39,7 @@ public abstract class Ship {
         this.def = def;
         this.mov = mov;
         this.rng = rng;
-        this.activeEffects = new java.util.ArrayList<>();
+        this.activeEffects = new ArrayList<>();
     }
 
     // -------------------------------------------------------------------------
@@ -71,7 +56,7 @@ public abstract class Ship {
      *         Usado por el evento Viento Favorable.
      */
     public boolean isAgile() {
-        return false; // sobreescribir en Balandra y Fragata
+        return false;
     }
 
     // -------------------------------------------------------------------------
@@ -304,3 +289,4 @@ public abstract class Ship {
 
     public void setPosition(Position position) { this.position = position; }
 }
+

@@ -118,7 +118,7 @@ public class GameController {
      */
     private void handleShipAction() {
         Ship ship = view.askSelectShip(gameState.getCurrentPlayer());
-        if (ship == null) return; // canceló la selección
+        if (ship == null) return;
 
         view.showShipStats(ship);
         ShipAction action = view.askShipAction(ship, gameState);
@@ -129,7 +129,7 @@ public class GameController {
             case REPAIR          -> handleRepair(ship);
             case BUY_PORT        -> handleBuyPort(ship);
             case EXTINGUISH_FIRE -> handleExtinguishFire(ship);
-            case CANCEL          -> {} // vuelve al menú principal sin hacer nada
+            case CANCEL          -> {}
         }
     }
 
@@ -143,7 +143,7 @@ public class GameController {
 
         view.showReachablePositions(reachable);
         Position destination = view.askDestination(reachable);
-        if (destination == null) return; // canceló
+        if (destination == null) return;
 
         ShipCommand command = new MoveCommand(ship, destination);
         executeCommand(command);
@@ -164,7 +164,7 @@ public class GameController {
         }
 
         Ship target = view.askTarget(targets);
-        if (target == null) return; // canceló
+        if (target == null) return;
 
         ShipCommand command = new AttackCommand(ship, target, combatSystem);
         executeCommand(command);

@@ -7,12 +7,6 @@ import tp2.model.ship.Ship;
 /**
  * Tesoro dinástico: ítem único por jugador cuya captura y transporte al puerto
  * propio es una de las condiciones de victoria.
- * Estado posible:
- *   - En el mapa (posición conocida, sin barco transportándolo).
- *   - Transportado por un barco (se mueve con él).
- *   - Flotando (el barco que lo llevaba fue hundido).
- * UML: DynasticTreasure --pertenece a--> Player (asociación).
- *      Ship --transporta--> DynasticTreasure (asociación opcional).
  * Principio: SRP — la condición de victoria no vive acá, sino en GameState.
  */
 public class DynasticTreasure {

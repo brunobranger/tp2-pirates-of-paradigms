@@ -74,6 +74,6 @@ public final class Position {
 
     @Override
     public String toString() {
-        return "(" + row + ", " + col + ")";
+        return "(" + getRow() + ", " + getCol() + ")";
     }
 }

@@ -148,5 +148,5 @@ public class Player {
     public void setOwnTreasure(DynasticTreasure treasure) { this.ownTreasure = treasure; }
 
     @Override
-    public String toString() { return name + " (" + faction + ")"; }
+    public String toString() { return getName() + " (" + getFaction() + ")"; }
 }

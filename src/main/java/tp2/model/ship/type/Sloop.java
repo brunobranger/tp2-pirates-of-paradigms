@@ -5,11 +5,8 @@ import tp2.model.ship.ShipType;
 
 /**
  * Balandra: barco ágil, particularmente rápido pero de bajo ataque.
- *
  * Estadísticas sugeridas (hipótesis del grupo — documentar en informe):
  *   HP=60, ATK=15, DEF=5, MOV=4, RNG=3
- *
- * Polimorfismo: sobreescribe getType() e isAgile().
  */
 public class Sloop extends Ship {
 

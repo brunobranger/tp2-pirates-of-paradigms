@@ -15,7 +15,7 @@ public final class ResourceCosts {
     public static final int RESOLVE_MUTINY_GOLD  = 50;
 
     // Madera
-    public static final int REPAIR_OUT_OF_PORT_WOOD = 30; // por barco reparado
+    public static final int REPAIR_OUT_OF_PORT_WOOD = 30;
     public static final int EXTINGUISH_FIRE_WOOD     = 20;
 
     // Recompensas

@@ -4,11 +4,6 @@ import java.util.List;
 
 /**
  * Resultado de aplicar un evento. Value Object.
- * Contiene la información que debe mostrarse al usuario según el enunciado:
- *   - qué evento ocurrió
- *   - qué barcos/jugadores fueron afectados
- *   - duración del efecto
- *   - consecuencias aplicadas
  */
 public class EventResult {
 

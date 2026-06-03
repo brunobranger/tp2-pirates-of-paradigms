@@ -30,8 +30,6 @@ public class GameState {
     private int turnNumber;
     private VictoryCondition victoryCondition;
     private Player playerWinner;
-
-    // Flag especial de Viento Favorable: este turno se puede mover y atacar
     private boolean canMoveAndAttackSameTurn;
 
 
@@ -57,10 +55,6 @@ public class GameState {
     /**
      * Evalúa si alguna condición de victoria se cumplió y actualiza winner.
      * Debe llamarse al finalizar cada acción que pueda cambiar el estado.
-     * Condiciones (enunciado):
-     *   1. El barco insignia rival fue hundido.
-     *   2. Se capturó el tesoro dinástico enemigo y se llegó al propio puerto.
-     *   3. El rival se rindió.
      */
     public void checkVictoryConditions() {
         if (isGameOver()) return;

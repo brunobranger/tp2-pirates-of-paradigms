@@ -5,7 +5,6 @@ import tp2.model.ship.ShipType;
 
 /**
  * Fragata: ágil, con mayor poder ofensivo y blindaje que la balandra.
- *
  * Estadísticas sugeridas: HP=80, ATK=25, DEF=15, MOV=3, RNG=4
  */
 public class Frigate extends Ship {
@@ -21,6 +20,6 @@ public class Frigate extends Ship {
 
     @Override
     public boolean isAgile() {
-        return true; // afectado por Viento Favorable (+2 MOV)
+        return true;
     }
 }

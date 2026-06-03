@@ -204,5 +204,5 @@ class DeckFire implements GameEvent {
     }
 
     @Override
-    public int getDurationInTurns() { return 0; } // permanente hasta apagarse
+    public int getDurationInTurns() { return 0; }
 }

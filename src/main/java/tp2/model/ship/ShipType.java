@@ -3,7 +3,6 @@ package tp2.model.ship;
 /**
  * Tipos de barco definidos en el enunciado.
  * Usado para la vista (representación en tablero) y para lógica de eventos
- * (ej. Viento Favorable solo beneficia a SLOOP y FRIGATE).
  */
 public enum ShipType {
     /** Balandra: ágil, rápido, bajo ataque. */

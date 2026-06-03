@@ -13,9 +13,6 @@ import tp2.model.game.GameState;
  *
  * Principio: OCP — agregar un evento nuevo = nueva clase que implementa GameEvent,
  * sin modificar el sistema de eventos existente.
- *
- * UML: GameController --usa--> GameEvent (dependencia).
- *      GameEvent <|-- Squall, Mutiny, FloatingTreasureEvent, Kraken, FavorableWind, DeckFire
  */
 public interface GameEvent {
 

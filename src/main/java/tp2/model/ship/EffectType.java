@@ -3,7 +3,6 @@ package tp2.model.ship;
 /**
  * Tipos de efecto de estado para identificación sin instanceof.
  * Principio: Tell Don't Ask — el Ship pregunta el tipo para decidir
- * comportamientos específicos (ej. canAttack chequea FIRE).
  */
 public enum EffectType {
     FIRE,             // Incendio: bloquea ataque, daña por turno

@@ -1,5 +1,6 @@
 package tp2.model.board;
 
+import tp2.config.GameConfig;
 import tp2.model.ship.Ship;
 import tp2.model.player.Player;
 
@@ -7,31 +8,43 @@ import java.util.*;
 
 /**
  * El tablero de juego: una rejilla rectangular de {@link Cell}s.
- *
- * Responsabilidades del tablero:
- *   - Mantener la grilla y brindar acceso a celdas por posición.
- *   - Resolver si una posición es válida dentro de los límites.
- *   - Calcular celdas alcanzables dado un rango de movimiento o disparo.
- *   - NO contiene reglas de turno ni de victoria (SRP).
- *
  * Patrón: el tablero actúa como Facade para las consultas espaciales.
- * UML: Board tiene composición con Cell (si el Board se destruye, las celdas también).
  */
 public class Board {
 
     private final int rows;
     private final int cols;
     private final Cell[][] grid;
-    private record Node(Position position, int steps) {} // Para hacer BFS
+    private record Node(Position position, int steps) {}
 
+    /**
+     * Inicializacion de constructor con metodos pasados correctamente.
+     * @param rows debe ser positiva
+     * @param cols debe ser positiva
+     */
     public Board(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
+        this.rows = setRows();
+        this.cols = setCols();
         this.grid = new Cell[rows][cols];
 
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
+            }
+        }
+    }
+
+    /**
+     * Sobrecarga de constructor en caso de no enviar argumentos iniciales.
+     */
+    public Board() {
+        this.rows = GameConfig.DEFAULT_BOARD_ROWS;
+        this.cols = GameConfig.DEFAULT_BOARD_COLS;
+        this.grid = new Cell[rows][cols];
+
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
             }
         }
     }
@@ -213,4 +226,18 @@ public class Board {
 
     public int getRows() { return rows; }
     public int getCols() { return cols; }
+
+    private int setCols() {
+        if (cols < 0) {
+            throw new IllegalArgumentException("cols must be positive");
+        }
+        return cols;
+    }
+
+    private int setRows() {
+        if (rows < 1) {
+            throw new IllegalArgumentException("rows must be greater than 0");
+        }
+        return rows;
+    }
 } 
