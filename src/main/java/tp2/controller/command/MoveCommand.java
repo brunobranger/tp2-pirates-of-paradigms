@@ -1,8 +1,13 @@
 package tp2.controller.command;
 
+import tp2.config.GameConfig;
+import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.board.Position;
+import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
+import tp2.model.ship.effect.ReducedAttackEffect;
+import tp2.model.ship.effect.ReducedMovementEffect;
 
 public class MoveCommand implements ShipCommand {
 
@@ -37,8 +42,17 @@ public class MoveCommand implements ShipCommand {
         }
 
         // Si el barco llegó a un arrecife, recibe daño
-        if (cell.getTerrain() == tp2.model.board.TerrainType.REEF) {
-            ship.receiveDamage(tp2.config.GameConfig.REEF_DAMAGE);
+        if (cell.getTerrain() == TerrainType.REEF) {
+            ship.receiveDamage(GameConfig.REEF_DAMAGE);
+        }
+
+        if (cell.getTerrain() == TerrainType.STORM) {
+            ship.addEffect(new ReducedMovementEffect(5)); //  cantidad de turnos?
+        }
+
+        if (cell.getTerrain() == TerrainType.FOG) {
+            ship.addEffect(new ReducedMovementEffect(5));
+            ship.addEffect(new ReducedAttackEffect(1, 0.4)); // por un turno y reduce el ataque un 40%
         }
     }
 }
