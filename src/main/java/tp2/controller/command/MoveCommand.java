@@ -52,7 +52,7 @@ public class MoveCommand implements ShipCommand {
 
         if (cell.getTerrain() == TerrainType.FOG) {
             ship.addEffect(new ReducedMovementEffect(5));
-            ship.addEffect(new ReducedAttackEffect(1, 0.4)); // por un turno y reduce el ataque un 40%
+            ship.addEffect(new ReducedAttackEffect(5, 0.4)); // por un turno y reduce el ataque un 40%
         }
     }
 }
