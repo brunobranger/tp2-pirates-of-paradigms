@@ -1,7 +1,7 @@
 package tp2.model.board;
 
 import org.junit.jupiter.api.Test;
-import tp2.model.ship.Sloop;
+import tp2.model.ship.type.Sloop;
 
 import java.util.Set;
 

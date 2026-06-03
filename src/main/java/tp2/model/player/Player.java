@@ -4,7 +4,7 @@ import tp2.model.board.Position;
 import tp2.model.resource.ResourcePool;
 import tp2.model.resource.ResourceCosts;
 import tp2.model.ship.Ship;
-import tp2.model.ship.Flagship;
+import tp2.model.ship.type.Flagship;
 import tp2.model.ship.ShipType;
 import tp2.model.treasure.DynasticTreasure;
 

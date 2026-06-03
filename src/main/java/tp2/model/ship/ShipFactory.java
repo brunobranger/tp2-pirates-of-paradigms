@@ -1,5 +1,7 @@
 package tp2.model.ship;
 
+import tp2.model.ship.type.*;
+
 /**
  * Fábrica de barcos.
  *

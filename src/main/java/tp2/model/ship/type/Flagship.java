@@ -1,4 +1,7 @@
-package tp2.model.ship;
+package tp2.model.ship.type;
+
+import tp2.model.ship.Ship;
+import tp2.model.ship.ShipType;
 
 /**
  * Barco Insignia: pesado, mejores estadísticas que el resto.

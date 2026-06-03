@@ -1,4 +1,7 @@
-package tp2.model.ship;
+package tp2.model.ship.effect;
+
+import tp2.model.ship.EffectType;
+import tp2.model.ship.Ship;
 
 /**
  * Interfaz para efectos de estado sobre un barco.

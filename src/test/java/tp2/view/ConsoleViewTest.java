@@ -7,8 +7,8 @@ import tp2.model.event.EventResult;
 import tp2.model.game.GameState;
 import tp2.model.player.Faction;
 import tp2.model.player.Player;
-import tp2.model.ship.FireEffect;
-import tp2.model.ship.Sloop;
+import tp2.model.ship.effect.FireEffect;
+import tp2.model.ship.type.Sloop;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

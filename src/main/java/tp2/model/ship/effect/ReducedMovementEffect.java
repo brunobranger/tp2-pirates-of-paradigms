@@ -1,14 +1,16 @@
-package tp2.model.ship;
+package tp2.model.ship.effect;
+
+import tp2.model.ship.EffectType;
 
 /**
- * Efecto de inmovilización (Kraken marino).
- * Impide el movimiento durante una cantidad de turnos.
+ * Efecto temporal que reduce el movimiento a 1 (Vendaval, Tormenta).
+ * Dura una cantidad configurable de turnos.
  */
-public class ImmobilizedEffect implements ShipEffect {
+public class ReducedMovementEffect implements ShipEffect {
 
     private int turnsRemaining;
 
-    public ImmobilizedEffect(int turns) {
+    public ReducedMovementEffect(int turns) {
         if (turns <= 0) {
             throw new IllegalArgumentException("Turns must be positive");
         }
@@ -16,7 +18,7 @@ public class ImmobilizedEffect implements ShipEffect {
     }
 
     @Override
-    public EffectType getType() { return EffectType.IMMOBILIZED; }
+    public EffectType getType() { return EffectType.REDUCED_MOVEMENT; }
 
     @Override
     public void tick() { turnsRemaining--; }
@@ -25,7 +27,7 @@ public class ImmobilizedEffect implements ShipEffect {
     public boolean isExpired() { return turnsRemaining <= 0; }
 
     @Override
-    public boolean preventsMovement() { return true; }
+    public int modifyMovement(int baseMovement) { return 1; }
 
     public int getTurnsRemaining() { return turnsRemaining; }
 }

@@ -1,6 +1,10 @@
 package tp2.model.ship;
 
 import org.junit.jupiter.api.Test;
+import tp2.model.ship.effect.FavorableWindEffect;
+import tp2.model.ship.effect.FireEffect;
+import tp2.model.ship.effect.ReducedMovementEffect;
+import tp2.model.ship.type.Sloop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

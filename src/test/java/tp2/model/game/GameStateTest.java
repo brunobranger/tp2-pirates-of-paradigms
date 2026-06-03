@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import tp2.model.board.Board;
 import tp2.model.player.Faction;
 import tp2.model.player.Player;
-import tp2.model.ship.Flagship;
+import tp2.model.ship.type.Flagship;
 
 import java.util.List;
 

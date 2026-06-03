@@ -1,4 +1,7 @@
-package tp2.model.ship;
+package tp2.model.ship.effect;
+
+import tp2.model.ship.EffectType;
+import tp2.model.ship.Ship;
 
 /**
  * Incendio en cubierta: bloquea el ataque y causa danio por turno.

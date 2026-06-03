@@ -7,7 +7,7 @@ import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.player.Faction;
 import tp2.model.player.Player;
-import tp2.model.ship.Sloop;
+import tp2.model.ship.type.Sloop;
 import tp2.model.treasure.DynasticTreasure;
 import tp2.model.treasure.FloatingTreasure;
 

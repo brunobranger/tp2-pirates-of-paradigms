@@ -1,4 +1,6 @@
-package tp2.model.ship;
+package tp2.model.ship.effect;
+
+import tp2.model.ship.EffectType;
 
 /**
  * Viento favorable: mejora movimiento/rango y habilita mover y atacar en el mismo turno.

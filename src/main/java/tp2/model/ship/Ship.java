@@ -1,7 +1,7 @@
 package tp2.model.ship;
 
 import tp2.model.board.Position;
-import tp2.model.resource.ResourcePool;
+import tp2.model.ship.effect.ShipEffect;
 import tp2.model.treasure.DynasticTreasure;
 
 import java.util.List;

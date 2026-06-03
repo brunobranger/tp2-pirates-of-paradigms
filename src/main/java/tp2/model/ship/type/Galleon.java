@@ -1,4 +1,7 @@
-package tp2.model.ship;
+package tp2.model.ship.type;
+
+import tp2.model.ship.Ship;
+import tp2.model.ship.ShipType;
 
 /**
  * Galeón: barco pesado, lento pero resistente y de gran armamento.

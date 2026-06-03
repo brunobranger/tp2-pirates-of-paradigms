@@ -1,4 +1,6 @@
-package tp2.model.ship;
+package tp2.model.ship.effect;
+
+import tp2.model.ship.EffectType;
 
 /**
  * Efecto temporal que reduce el ataque del barco.
