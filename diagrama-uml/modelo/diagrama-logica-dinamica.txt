@@ -1,0 +1,54 @@
+@startuml
+
+' Referencias a elementos modelados en otros diagramas
+class GameState
+class Ship
+class CombatSystem
+class Player
+
+interface ShipCommand {
+    + canExecute(gameState: GameState): boolean
+    + execute(gameState: GameState)
+}
+class AttackCommand
+class RepairCommand
+
+interface GameEvent {
+    + apply(gameState: GameState): EventResult
+}
+class Kraken
+class Mutiny
+
+class EventManager {
+    + checkAndGetEvent(gameState: GameState): GameEvent
+}
+class EventResult {
+    - consequences: List<String>
+}
+
+interface VictoryStrategy {
+    + check(state: GameState): Player
+}
+class FlagshipSunkStrategy
+class TreasureInPortStrategy
+
+' Realizaciones explícitas
+ShipCommand <|.. AttackCommand
+ShipCommand <|.. RepairCommand
+
+GameEvent <|.. Kraken
+GameEvent <|.. Mutiny
+
+VictoryStrategy <|.. FlagshipSunkStrategy
+VictoryStrategy <|.. TreasureInPortStrategy
+
+' Relaciones
+AttackCommand --> "1" Ship
+AttackCommand --> "1" CombatSystem
+
+EventManager "1" o--> "*" GameEvent
+GameEvent ..> EventResult
+
+GameState "1" o--> "*" VictoryStrategy
+
+@enduml

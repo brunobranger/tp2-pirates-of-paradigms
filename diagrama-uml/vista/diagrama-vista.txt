@@ -1,0 +1,66 @@
+@startuml
+
+' Referencias a elementos modelados en otros diagramas
+class GameState
+class Board
+class AttackResult
+class EventResult
+class GameController
+
+class Main {
+    + {static} main(args: String[])
+}
+
+class GameLoader {
+    - resourcesBasePath: String
+    + loadGame(mapFile: String, fleetFile: String): GameState
+}
+
+class GameConfig {
+    + {static} DEFAULT_BOARD_ROWS: int
+    + {static} DEFAULT_BOARD_COLS: int
+}
+
+interface GameView {
+    + showBoard(state: GameState)
+    + showTurnSummary(state: GameState)
+    + showAttackResult(result: AttackResult)
+    + showEventResult(result: EventResult)
+    + promptShipAction(): ShipAction
+}
+
+class ConsoleView {
+    - scanner: Scanner
+}
+
+class BoardRenderer {
+    + render(board: Board): String
+}
+
+enum ShipAction {
+    MOVE
+    ATTACK
+    REPAIR
+    BUY_PORT
+    EXTINGUISH_FIRE
+}
+
+' Realizaciones explícitas
+GameView <|.. ConsoleView
+
+' Relaciones de Inicialización
+Main ..> GameLoader : instancia
+Main ..> ConsoleView : instancia
+Main ..> GameController : ensambla
+GameLoader ..> GameState : construye
+
+' Relaciones del Controlador
+GameController --> "1" GameView
+
+' Relaciones de la Vista
+ConsoleView ..> BoardRenderer : usa
+ConsoleView ..> ShipAction : retorna
+GameView ..> GameState : lee para mostrar
+BoardRenderer ..> Board : lee para dibujar ASCII
+
+@enduml
