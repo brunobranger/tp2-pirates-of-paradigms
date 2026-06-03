@@ -126,7 +126,11 @@ Ver informe PDF adjunto.
 
 - Con respecto al caso de cuando un barco logra la condicion de victoria de capturar el tesoro enemigo y lo llevo correctamente hasta su base. No estaba bien definido y queda medio ambiguo cuando era soltar la carga o no por hundimiento del barco con el tesoro o por entregar al puerto el tesoro para ganar por lo que se hizo algo parecido a una sobre carga de metodos, pero en este caso con distinciones sutiles en el nombre para identificar sus acciones, solo cambian un aspecto booleano para indicar el aspecto de que si la carga se suelta o no, para el caso practico del barco queda en false, para hundimiento si cambia.
 
-- ...
+- Con respecto a la generación del tablero se opta por usar uno genérico y otro personalizado:
+  - Board() {} - establece una generación predeterminada.
+  - Board(int rows, int cols) {} - establece una generación personalizada.
+
+- 
 
 ---
 
