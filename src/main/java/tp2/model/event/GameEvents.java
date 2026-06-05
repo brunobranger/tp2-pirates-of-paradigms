@@ -1,6 +1,8 @@
 package tp2.model.event;
 
 import tp2.model.game.GameState;
+import tp2.model.board.Position;
+import tp2.model.ship.effect.*;
 
 import java.util.List;
 
@@ -15,6 +17,7 @@ class Squall implements GameEvent {
 
     private static final int DURATION = 1; // próximo turno
     private static final int LIGHT_DAMAGE = 5;
+    private static final float AFFECTED_BOARD_AREA_PERCENT = 0.20f;
 
     @Override
     public String getName() { return "Vendaval"; }
@@ -26,12 +29,20 @@ class Squall implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        //
         // 1. Aplicar ReducedMovementEffect(1) a todos los barcos de ambos jugadores
         // 2. Aplicar LIGHT_DAMAGE a cada barco afectado
         // 3. Convertir algunas casillas (hipótesis: zona central) a STORM temporalmente
         // 4. Construir y retornar EventResult
-        return new EventResult(getName(), List.of(), DURATION, List.of());
+
+        gameState.applyEffectToAllShips(new ReducedMovementEffect(1));
+        List<Position> stormArea = gameState.applyCentralStorm(AFFECTED_BOARD_AREA_PERCENT, DURATION);
+        List<String> affectedShips = gameState.applyDamageToShipsInArea(stormArea, LIGHT_DAMAGE);
+        List<String> consequences = List.of(
+                "Movimiento de todos los barcos reducido a 1",
+                "Los barcos listados reciben " + LIGHT_DAMAGE + " de daño",
+                "Casillas centrales convertidas en Tormenta" );
+
+        return new EventResult(getName(), affectedShips, DURATION, consequences);
     }
 
     @Override
@@ -49,6 +60,8 @@ class Squall implements GameEvent {
 class Mutiny implements GameEvent {
 
     private static final int DURATION = 2;
+    private static final double ATTACK_MULTIPLIER = 0.75;
+    private static final double COST_MULTIPLIER = 1.5;
 
     @Override
     public String getName() { return "Motín"; }
@@ -66,6 +79,11 @@ class Mutiny implements GameEvent {
         // 3. Aplicar ReducedAttackEffect a la flota
         // 4. gameState.getCurrentPlayer().getResources().applyCostIncrease(1.5, DURATION)
         // 5. Construir y retornar EventResult
+
+        gameState.applyEffectToCurrentPlayerFleet(new ReducedAttackEffect(DURATION, ATTACK_MULTIPLIER));
+        gameState.applyEffectToCurrentPlayerRandomShip(new LostActionEffect(1));
+        gameState.applyCostIncreaseToCurrentPlayer(COST_MULTIPLIER, DURATION);
+
         return new EventResult(getName(), List.of(), DURATION, List.of());
     }
 
@@ -100,7 +118,16 @@ class FloatingTreasureEvent implements GameEvent {
         // 2. Crear FloatingTreasure en esa posición con timer DISAPPEAR_AFTER_TURNS
         // 3. Registrar el FloatingTreasure en GameState
         // 4. Construir y retornar EventResult
-        return new EventResult(getName(), List.of(), DISAPPEAR_AFTER_TURNS, List.of());
+
+        Position position = gameState.spawnFloatingTreasure(DISAPPEAR_AFTER_TURNS);
+        List<String> affected = List.of("Casilla " + position.toString());
+        List<String> consequences = List.of(
+                "Apareció un botín abandonado a la deriva.",
+                "Otorga Oro y Reparación al recogerlo.",
+                "Desaparecerá en " + DISAPPEAR_AFTER_TURNS + " turnos si no es reclamado."
+        );
+
+        return new EventResult(getName(), affected, DISAPPEAR_AFTER_TURNS, consequences);
     }
 
     @Override
@@ -135,6 +162,22 @@ class Kraken implements GameEvent {
         // 3. Barcos en casillas aledañas: reducir HP a la mitad
         // 4. Inmovilizar un barco cercano con ImmobilizedEffect(1)
         // 5. Registrar el Kraken en GameState para que persista DURATION turnos
+
+        /*
+        Position spawnPosition = gameState.getBoard().getRandomFreePosition();
+        Board board = gameState.getBoard();
+        int initRow = Math.max(0, spawnPosition.getRow() - 1);
+        int endRow = spawnPosition.getRow() + 1;
+        int initCol = Math.max(0, spawnPosition.getCol() - 1);
+        int endCol = spawnPosition.getCol() + 1;
+
+        for (int row = initRow; row <= endRow; row++) {
+            for (int col = initCol; col <= endCol; col++) {
+                //TO DO: bloquear casilllas
+            }
+        }
+         */
+
         return new EventResult(getName(), List.of(), DURATION, List.of());
     }
 
@@ -181,10 +224,13 @@ class FavorableWind implements GameEvent {
 /**
  * Incendio en cubierta: afecta a un barco aleatorio.
  * El barco pierde HP por turno y no puede atacar hasta que se apague.
+ *
  * Nota: este evento aplica FireEffect sobre un barco;
  * la acción "apagar incendio" se gestiona en GameController.
  */
 class DeckFire implements GameEvent {
+
+    private final int DAMAGE_PER_TURN = 3;
 
     @Override
     public String getName() { return "Incendio en Cubierta"; }
@@ -200,7 +246,14 @@ class DeckFire implements GameEvent {
         // 1. Seleccionar un barco aleatorio (hipótesis: del jugador activo, o de cualquiera — documentar)
         // 2. ship.addEffect(new FireEffect())
         // 3. Retornar EventResult indicando qué barco está en llamas
-        return new EventResult(getName(), List.of(), 0, List.of());
+
+        String affected = gameState.applyEffectToCurrentPlayerRandomShip(new FireEffect(DAMAGE_PER_TURN));
+        List<String> consequences = List.of(
+                "El barco se incendia, se debe reparar utilizando madera o llegar a un puerto propio",
+                "Pierde " + DAMAGE_PER_TURN + " HP por turno hasta que se apague"
+        );
+
+        return new EventResult(getName(), List.of(affected), 0, consequences);
     }
 
     @Override

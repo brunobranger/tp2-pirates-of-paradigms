@@ -154,6 +154,43 @@ public class Board {
     }
 
     // -------------------------------------------------------------------------
+    // Eventos
+    // -------------------------------------------------------------------------
+
+    /**
+     * Aplica un clima temporal en un área central del tablero con un tamaño definido por el factor
+     * areaPercent relativo al tamaño del mismo.
+     * @param areaPercent factor entre 0 y 1 que determina el tamaño del área central afectada
+     * @param climate clima a aplicar en las celdas
+     * @param duration duración en turnos
+     */
+    public List<Position> applyCentralClimateEffect(float areaPercent, TerrainType climate, int duration){
+
+        List<Position> affectedPositions = new ArrayList<>();
+
+        if(areaPercent < 0 || areaPercent > 1)
+            throw new IllegalArgumentException("areaPercent debe estar entre 0 y 1");
+
+        //Obtener casillas centrales y calcular el area afectada con el porcentaje recibido
+        int height = (int) (this.rows * areaPercent);
+        int wide = (int) (this.cols * areaPercent);
+        int initRow = Math.max(0, (rows / 2) - (height / 2));
+        int endRow = (rows / 2) + (height / 2);
+        int initCol = Math.max(0, (cols / 2) - (wide / 2));
+        int endCol = (cols / 2) + (wide / 2);
+
+        for (int row = initRow; row <= endRow; row++) {
+            for (int col = initCol; col <= endCol; col++) {
+                Position position = new Position(row, col);
+                this.getCellAt(position).applyTemporalClimate(climate, duration);
+                affectedPositions.add(position);
+            }
+        }
+
+        return affectedPositions;
+    }
+
+    // -------------------------------------------------------------------------
     // Combate / rango
     // -------------------------------------------------------------------------
 
@@ -219,7 +256,7 @@ public class Board {
     public void sinkShip(Ship ship) {
         Cell cell = getCellAt(ship.getPosition());
         if (ship.isCarryingTreasure()) {
-            cell.placeFloatingTreasure(ship.dropTreasure());
+            cell.placeTreasure(ship.dropTreasure());
         }
         cell.removeShip();
     }

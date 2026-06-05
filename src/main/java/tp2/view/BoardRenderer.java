@@ -59,7 +59,7 @@ public class BoardRenderer {
         if (cell.isOccupied()) {
             return getShipSymbol(cell, gameState);
         }
-        if (cell.getFloatingTreasure() != null || hasDynasticTreasure(cell.getPosition(), gameState)) {
+        if (hasDynasticTreasure(cell.getPosition(), gameState)) {
             return "TR";
         }
         if (hasFloatingTreasure(cell.getPosition(), gameState)) {

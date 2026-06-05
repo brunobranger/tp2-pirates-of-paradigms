@@ -1,8 +1,8 @@
 package tp2.model.board;
 
 import tp2.model.ship.Ship;
-import tp2.model.treasure.DynasticTreasure;
 import tp2.model.player.Player;
+import tp2.model.treasure.Treasure;
 
 /**
  * Representa una casilla del tablero.
@@ -10,7 +10,7 @@ import tp2.model.player.Player;
  * Una celda conoce:
  *   - su tipo de terreno (TerrainType)
  *   - el barco que la ocupa (si hay uno)
- *   - el tesoro flotante que contiene (si hay uno)
+ *   - el tesoro dinástico o flotante que contiene (si hay uno)
  *   - el jugador dueño (si es un puerto comprado)
  *   - la dirección de corriente marina (solo si es MARINE_CURRENT)
  *
@@ -20,15 +20,19 @@ import tp2.model.player.Player;
 public class Cell {
 
     private final Position position;
-    private TerrainType terrain;
+    private TerrainType baseTerrain;
+    private TerrainType currentTerrain;
+    private int climateEffectDuration = 0;
+    private TerrainType climateOverride = null; //null si no hay un clima temporal afectando la celda
     private Ship occupant;
-    private DynasticTreasure floatingTreasure;
+    private Treasure treasure;
     private Player portOwner;
     private Direction currentDirection;
 
     public Cell(Position position, TerrainType terrain) {
         this.position = position;
-        this.terrain = terrain;
+        this.baseTerrain = terrain;
+        this.currentTerrain = terrain;
     }
 
     // -------------------------------------------------------------------------
@@ -39,7 +43,7 @@ public class Cell {
      * @return true si la casilla puede ser ocupada por un barco (no es isla, no está ya ocupada).
      */
     public boolean isNavigable() {
-        return this.terrain != TerrainType.ISLAND && this.occupant == null;
+        return this.baseTerrain != TerrainType.ISLAND && this.occupant == null;
     }
 
     /**
@@ -53,7 +57,7 @@ public class Cell {
      * @return true si es un puerto sin dueño (puede comprarse)
      */
     public boolean isUnownedPort() {
-        return terrain == TerrainType.PORT && portOwner == null;
+        return baseTerrain == TerrainType.PORT && portOwner == null;
     }
 
     /**
@@ -61,7 +65,7 @@ public class Cell {
      * @return true si es un puerto propio del jugador dado
      */
     public boolean isOwnedPortOf(Player player) {
-        return terrain == TerrainType.PORT && portOwner != null && portOwner.equals(player);
+        return baseTerrain == TerrainType.PORT && portOwner != null && portOwner.equals(player);
     }
 
     // -------------------------------------------------------------------------
@@ -93,17 +97,17 @@ public class Cell {
      * @throws IllegalStateException si no es una casilla de tipo PORT
      */
     public void assignPortOwner(Player player) {
-        if (terrain != TerrainType.PORT) throw new IllegalStateException("The terrain is not a PORT");
+        if (baseTerrain != TerrainType.PORT) throw new IllegalStateException("The terrain is not a PORT");
         portOwner = player;
     }
 
     /**
-     * Coloca un tesoro flotante en la casilla (al hundirse un barco que lo transportaba).
+     * Coloca un tesoro en la casilla (al hundirse un barco que lo transportaba).
      *
      * @param treasure tesoro a dejar flotando
      */
-    public void placeFloatingTreasure(DynasticTreasure treasure) {
-        this.floatingTreasure = treasure;
+    public void placeTreasure(Treasure treasure) {
+        this.treasure = treasure;
     }
 
     /**
@@ -111,9 +115,9 @@ public class Cell {
      *
      * @return tesoro flotante, o null si no había ninguno
      */
-    public DynasticTreasure pickUpTreasure() {
-        DynasticTreasure treasure = this.floatingTreasure;
-        this.floatingTreasure = null;
+    public Treasure pickUpTreasure() {
+        Treasure treasure = this.treasure;
+        this.treasure = null;
         return treasure;
     }
 
@@ -124,7 +128,28 @@ public class Cell {
      * @param newTerrain nuevo tipo de terreno
      */
     public void setTerrain(TerrainType newTerrain) {
-        this.terrain = newTerrain;
+        this.currentTerrain = newTerrain;
+    }
+
+    public void applyTemporalClimate(TerrainType climate, int duration) {
+        if(climate != TerrainType.STORM && climate != TerrainType.FOG && climate != TerrainType.MARINE_CURRENT)
+            throw new IllegalArgumentException("El tipo de terreno recibido no es un clima");
+        this.climateOverride = climate;
+        this.climateEffectDuration = duration;
+        this.currentTerrain = climate;
+    }
+
+    /**
+     * Se debe llamar al pasar el turno. Si el efecto expira, vuelve al estado base.
+     */
+    public void decrementClimateDuration() {
+        if (climateEffectDuration > 0) {
+            climateEffectDuration--;
+            if (climateEffectDuration == 0) {
+                this.climateOverride = null;
+                this.currentTerrain = this.baseTerrain;
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -132,9 +157,9 @@ public class Cell {
     // -------------------------------------------------------------------------
 
     public Position getPosition() { return position; }
-    public TerrainType getTerrain() { return terrain; }
+    public TerrainType getTerrain() { return currentTerrain; }
     public Ship getOccupant() { return occupant; }
-    public DynasticTreasure getFloatingTreasure() { return floatingTreasure; }
+    public Treasure getTreasure() { return treasure; }
     public Player getPortOwner() { return portOwner; }
     public Direction getCurrentDirection() { return currentDirection; }
 

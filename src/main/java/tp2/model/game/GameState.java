@@ -1,7 +1,12 @@
 package tp2.model.game;
 
 import tp2.model.board.Board;
+import tp2.model.board.Cell;
+import tp2.model.board.Position;
+import tp2.model.board.TerrainType;
 import tp2.model.player.Player;
+import tp2.model.ship.Ship;
+import tp2.model.ship.effect.ShipEffect;
 import tp2.model.treasure.FloatingTreasure;
 import tp2.model.victory.FlagshipSunkStrategy;
 import tp2.model.victory.SurrenderStrategy;
@@ -10,6 +15,7 @@ import tp2.model.victory.VictoryStrategy;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Estado central del juego. Modelo en el patrón MVC/MVP.
@@ -114,6 +120,19 @@ public class GameState {
     // -------------------------------------------------------------------------
 
     /**
+     * Crea un tesoro flotante en el juego en una posición aleatoria (generado por evento).
+     *
+     * @param duration duración en turnos
+     */
+    public Position spawnFloatingTreasure(int duration) {
+        Position pos = this.board.getRandomFreePosition();
+        FloatingTreasure treasure = new FloatingTreasure(pos, duration);
+        this.floatingTreasures.add(treasure);
+        this.board.getCellAt(pos).placeTreasure(treasure);
+        return pos;
+    }
+
+    /**
      * Agrega un tesoro flotante al estado (generado por evento).
      *
      * @param treasure tesoro a agregar
@@ -131,6 +150,77 @@ public class GameState {
             treasure.tick();
         }
         floatingTreasures.removeIf(FloatingTreasure::isGone);
+    }
+
+    // -------------------------------------------------------------------------
+    // Aplicación de eventos
+    // -------------------------------------------------------------------------
+
+    /**
+     * Aplica un efecto a todos los barcos presentes.
+     * @param effect efecto a aplicar
+     */
+    public void applyEffectToAllShips(ShipEffect effect){
+        for(Player player : this.players)
+            for (Ship ship : player.getActiveFleet())
+                ship.addEffect(effect);
+    }
+
+    /**
+     * Aplica daño a todos los barcos presentes.
+     * @param damage daño a aplicar
+     */
+    public void applyDamageToAllShips(int damage){
+        for(Player player : this.getPlayers())
+            for (Ship ship : player.getActiveFleet())
+                ship.receiveDamage(damage);
+    }
+
+    /**
+     * Aplica daño a los barcos en un área del tablero.
+     * @param area lista de posiciones donde se aplicará el daño
+     * @param damage daño a aplicar
+     */
+    public List<String> applyDamageToShipsInArea(List<Position> area, int damage){
+        List<String> affectedShips = new ArrayList<>();
+        for(Position pos : area) {
+            try {
+                Ship ship = board.getCellAt(pos).getOccupant();
+                if (ship != null) {
+                    ship.receiveDamage(damage);
+                    affectedShips.add(ship.getName());
+                }
+            } catch (IllegalArgumentException error) {
+                //si la posición no es válida no se hace nada
+            }
+        }
+        return affectedShips;
+    }
+
+    /**
+     * Aplica el efecto tormenta en un área central del tablero determinada por un porcentaje
+     * @param areaPercent porcentaje del tablero donde se aplica la tormenta
+     * @param duration duración en turnos
+     */
+    public List<Position> applyCentralStorm(float areaPercent, int duration){
+        return this.board.applyCentralClimateEffect(areaPercent, TerrainType.STORM, duration);
+    }
+
+    public void applyEffectToCurrentPlayerFleet(ShipEffect effect){
+        for(Ship ship : this.currentPlayer.getActiveFleet())
+            ship.addEffect(effect);
+    }
+
+    public String applyEffectToCurrentPlayerRandomShip(ShipEffect effect){
+        Random random = new Random();
+        List<Ship> fleet = this.currentPlayer.getActiveFleet();
+        Ship ship = fleet.get(random.nextInt(fleet.size()));
+        ship.addEffect(effect);
+        return ship.getName();
+    }
+
+    public void applyCostIncreaseToCurrentPlayer(double costMultiplier, int duration){
+        this.getCurrentPlayer().getResources().applyCostIncrease(costMultiplier, duration);
     }
 
     // -------------------------------------------------------------------------
