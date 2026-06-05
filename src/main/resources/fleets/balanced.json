@@ -1,0 +1,40 @@
+{
+  "fleets": {
+    "CRIMSON_BROTHERHOOD": [
+      {
+        "type": "FLAGSHIP",
+        "name": "Orgullo Carmesi"
+      },
+      {
+        "type": "GALLEON",
+        "name": "Furia Escarlata"
+      },
+      {
+        "type": "FRIGATE",
+        "name": "Hoja Rubi"
+      },
+      {
+        "type": "SLOOP",
+        "name": "Brasa Veloz"
+      }
+    ],
+    "ABYSS_CROWN": [
+      {
+        "type": "FLAGSHIP",
+        "name": "Trono del Abismo"
+      },
+      {
+        "type": "GALLEON",
+        "name": "Leviatan Oscuro"
+      },
+      {
+        "type": "FRIGATE",
+        "name": "Sombra Abisal"
+      },
+      {
+        "type": "SLOOP",
+        "name": "Eco Profundo"
+      }
+    ]
+  }
+}
