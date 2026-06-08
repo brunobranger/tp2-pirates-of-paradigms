@@ -9,7 +9,7 @@ import tp2.model.ship.Ship;
  * propio es una de las condiciones de victoria.
  * Principio: SRP — la condición de victoria no vive acá, sino en GameState.
  */
-public class DynasticTreasure {
+public class DynasticTreasure implements Treasure{
 
     private final Player owner;
     private Position positionCarrierTreasure;
@@ -21,6 +21,18 @@ public class DynasticTreasure {
         this.positionCarrierTreasure = initialPosition;
         this.carrierTreasure = null;
         this.isFloating = false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Interfaz Treasure
+    // -------------------------------------------------------------------------
+
+    public String getType(){
+        return "DYNASTIC";
+    }
+
+    public void onPickUp(Ship ship, Player player){
+        ship.pickUpTreasure(this);
     }
 
     // -------------------------------------------------------------------------

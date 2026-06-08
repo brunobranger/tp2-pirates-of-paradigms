@@ -1,6 +1,8 @@
 package tp2.model.treasure;
 
 import tp2.model.board.Position;
+import tp2.model.player.Player;
+import tp2.model.ship.Ship;
 
 /**
  * Tesoro flotante generado por el evento "Tesoro flotante".
@@ -8,16 +10,30 @@ import tp2.model.board.Position;
  * Principio: SRP — separar de DynasticTreasure porque tienen ciclo de vida y
  * propósito completamente distintos.
  */
-public class FloatingTreasure {
+public class FloatingTreasure implements Treasure{
 
     private final Position position;
     private int turnsUntilDisappear;
     private boolean claimed;
+    private final int PROVIDED_GOLD = 10;
+    private final int PROVIDED_HP = 25;
 
     public FloatingTreasure(Position position, int turnsUntilDisappear) {
         this.position = position;
         this.turnsUntilDisappear = turnsUntilDisappear;
         this.claimed = false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Interfaz Treasure
+    // -------------------------------------------------------------------------
+    public String getType(){
+        return "FLOATING";
+    }
+
+    public void onPickUp(Ship ship, Player player){
+        player.getResources().earnGold(PROVIDED_GOLD);
+        ship.repairHp(PROVIDED_HP);
     }
 
     // -------------------------------------------------------------------------

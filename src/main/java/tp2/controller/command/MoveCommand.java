@@ -34,11 +34,13 @@ public class MoveCommand implements ShipCommand {
         gameState.getBoard().applyMarineCurrentIfPresent(ship);
         ship.registerMove();
 
-        // Si el barco llegó a una celda con tesoro flotante, lo recoge
+        var player = gameState.getCurrentPlayer();
         var cell = gameState.getBoard().getCellAt(destination);
-        if (cell.getFloatingTreasure() != null) {
+
+        // Si el barco llegó a una celda con tesoro, lo recoge
+        if (cell.getTreasure() != null) {
             var treasure = cell.pickUpTreasure();
-            ship.pickUpTreasure(treasure);
+            treasure.onPickUp(ship, player);
         }
 
         // Si el barco llegó a un arrecife, recibe daño
