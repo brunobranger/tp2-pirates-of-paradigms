@@ -12,6 +12,12 @@
 
 ---
 
+## Informe
+
+[Informe TP2 - Pirates of Paradigms](https://docs.google.com/document/d/1vYzimgFAUGqLEJULcRMF2w2TxwtyOVF6g0cL-HISw_I/edit?tab=t.0)
+
+---
+
 ## Requisitos previos
 
 - Java 21 (cualquier distribución)
@@ -91,7 +97,7 @@ Luego comienza la partida. En cada turno el jugador puede:
 
 ## Decisiones de diseño
 
-Ver informe PDF adjunto.
+Ver [informe completo](https://docs.google.com/document/d/1vYzimgFAUGqLEJULcRMF2w2TxwtyOVF6g0cL-HISw_I/edit?tab=t.0).
 
 ### Patrones utilizados
 
