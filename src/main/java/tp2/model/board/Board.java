@@ -124,7 +124,6 @@ public class Board {
      * @throws IllegalArgumentException si el destino no es navegable
      */
     public void moveShip(Ship ship, Position destination) {
-        // CORREGIDO PoLK: guardamos la posición en variable local en lugar de encadenar ship.getPosition() dos veces
         Position origin = ship.getPosition();
 
         if (!getCellAt(destination).isNavigable()) throw new IllegalArgumentException("Destination is not navigable");
@@ -141,7 +140,6 @@ public class Board {
      * @param ship barco que acaba de moverse
      */
     public void applyMarineCurrentIfPresent(Ship ship) {
-        // CORREGIDO PoLK: guardamos posición y celda en variables locales en lugar de encadenar
         Position current = ship.getPosition();
         Cell cell = getCellAt(current);
 
@@ -205,7 +203,6 @@ public class Board {
     public List<Ship> getTargetsInRange(Ship attacker, int range, Player enemy) {
         List<Ship> targets = new ArrayList<>();
         for (Ship ship : enemy.getActiveFleet()) {
-            // CORREGIDO PoLK: delegamos en Ship.isInRange en lugar de encadenar attacker.getPosition().distanceTo(...)
             if (attacker.isInRange(ship, range)) {
                 targets.add(ship);
             }

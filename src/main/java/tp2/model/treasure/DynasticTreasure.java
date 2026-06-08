@@ -27,8 +27,8 @@ public class DynasticTreasure implements Treasure{
     // Interfaz Treasure
     // -------------------------------------------------------------------------
 
-    public String getType(){
-        return "DYNASTIC";
+    public TreasureType getType(){
+        return TreasureType.DYNASTIC;
     }
 
     public void onPickUp(Ship ship, Player player){

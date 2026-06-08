@@ -6,6 +6,8 @@ import tp2.model.ship.effect.*;
 
 import java.util.List;
 
+import static tp2.config.GameConfig.KRAKEN_DURATION_TURNS;
+
 // =============================================================================
 // VENDAVAL
 // =============================================================================
@@ -29,11 +31,6 @@ class Squall implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        // 1. Aplicar ReducedMovementEffect(1) a todos los barcos de ambos jugadores
-        // 2. Aplicar LIGHT_DAMAGE a cada barco afectado
-        // 3. Convertir algunas casillas (hipótesis: zona central) a STORM temporalmente
-        // 4. Construir y retornar EventResult
-
         gameState.applyEffectToAllShips(new ReducedMovementEffect(1));
         List<Position> stormArea = gameState.applyCentralStorm(AFFECTED_BOARD_AREA_PERCENT, DURATION);
         List<String> affectedShips = gameState.applyDamageToShipsInArea(stormArea, LIGHT_DAMAGE);
@@ -73,13 +70,6 @@ class Mutiny implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        //
-        // 1. Seleccionar al azar un barco del jugador activo
-        // 2. Aplicar LostActionEffect al barco seleccionado
-        // 3. Aplicar ReducedAttackEffect a la flota
-        // 4. gameState.getCurrentPlayer().getResources().applyCostIncrease(1.5, DURATION)
-        // 5. Construir y retornar EventResult
-
         gameState.applyEffectToCurrentPlayerFleet(new ReducedAttackEffect(DURATION, ATTACK_MULTIPLIER));
         gameState.applyEffectToCurrentPlayerRandomShip(new LostActionEffect(1));
         gameState.applyCostIncreaseToCurrentPlayer(COST_MULTIPLIER, DURATION);
@@ -113,12 +103,6 @@ class FloatingTreasureEvent implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        //
-        // 1. Obtener posición libre aleatoria: gameState.getBoard().getRandomFreePosition()
-        // 2. Crear FloatingTreasure en esa posición con timer DISAPPEAR_AFTER_TURNS
-        // 3. Registrar el FloatingTreasure en GameState
-        // 4. Construir y retornar EventResult
-
         Position position = gameState.spawnFloatingTreasure(DISAPPEAR_AFTER_TURNS);
         List<String> affected = List.of("Casilla " + position.toString());
         List<String> consequences = List.of(
@@ -143,9 +127,6 @@ class FloatingTreasureEvent implements GameEvent {
  * inmoviliza temporalmente una embarcación.
  */
 class Kraken implements GameEvent {
-
-    private static final int DURATION = 3;
-
     @Override
     public String getName() { return "Kraken Marino"; }
 
@@ -178,11 +159,11 @@ class Kraken implements GameEvent {
         }
          */
 
-        return new EventResult(getName(), List.of(), DURATION, List.of());
+        return new EventResult(getName(), List.of(), KRAKEN_DURATION_TURNS, List.of());
     }
 
     @Override
-    public int getDurationInTurns() { return DURATION; }
+    public int getDurationInTurns() { return KRAKEN_DURATION_TURNS; }
 }
 
 // =============================================================================
@@ -206,10 +187,6 @@ class FavorableWind implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        //
-        // 1. A barcos ágiles (isAgile()): FavorableWindEffect con +2 MOV
-        // 2. A todos los barcos: +1 RNG este turno
-        // 3. Activar flag en GameState que permita moverse y atacar en el mismo turno este turno
         return new EventResult(getName(), List.of(), DURATION, List.of());
     }
 
@@ -242,11 +219,6 @@ class DeckFire implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        //
-        // 1. Seleccionar un barco aleatorio (hipótesis: del jugador activo, o de cualquiera — documentar)
-        // 2. ship.addEffect(new FireEffect())
-        // 3. Retornar EventResult indicando qué barco está en llamas
-
         String affected = gameState.applyEffectToCurrentPlayerRandomShip(new FireEffect(DAMAGE_PER_TURN));
         List<String> consequences = List.of(
                 "El barco se incendia, se debe reparar utilizando madera o llegar a un puerto propio",

@@ -30,7 +30,7 @@ public class EventManager {
     private int turnsSinceLastEvent;
 
     // Lista de eventos disponibles — agregar aquí para registrar nuevos (OCP)
-    private List<GameEvent> availableEvents;
+    private final List<GameEvent> availableEvents;
 
     /** Objeto Singleton, tiene una única instancia durante la ejecución */
     private EventManager() {

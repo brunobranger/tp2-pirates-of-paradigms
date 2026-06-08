@@ -20,7 +20,7 @@ import tp2.model.treasure.Treasure;
 public class Cell {
 
     private final Position position;
-    private TerrainType baseTerrain;
+    private final TerrainType baseTerrain;
     private TerrainType currentTerrain;
     private int climateEffectDuration = 0;
     private TerrainType climateOverride = null; //null si no hay un clima temporal afectando la celda
@@ -107,6 +107,13 @@ public class Cell {
      * @param treasure tesoro a dejar flotando
      */
     public void placeTreasure(Treasure treasure) {
+        if (treasure == null) {
+            throw new IllegalArgumentException("No se puede colocar un tesoro nulo en la casilla.");
+        }
+
+        if (this.treasure != null) {
+            throw new IllegalStateException("Esta casilla ya contiene un tesoro flotando.");
+        }
         this.treasure = treasure;
     }
 
@@ -116,6 +123,10 @@ public class Cell {
      * @return tesoro flotante, o null si no había ninguno
      */
     public Treasure pickUpTreasure() {
+        if (this.treasure == null) {
+            throw new IllegalStateException("No hay ningún tesoro en esta casilla para ser recogido.");
+        }
+
         Treasure treasure = this.treasure;
         this.treasure = null;
         return treasure;

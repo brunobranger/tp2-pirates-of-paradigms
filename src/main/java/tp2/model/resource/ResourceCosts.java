@@ -20,8 +20,8 @@ public final class ResourceCosts {
 
     // Recompensas
     public static final int SINK_SHIP_GOLD_REWARD    = 40;
-    public static final int FLOATING_TREASURE_GOLD   = 60;
-    public static final int FLOATING_TREASURE_HP_REPAIR = 20;
+    public static final int FLOATING_TREASURE_GOLD   = 10;
+    public static final int FLOATING_TREASURE_HP_REPAIR = 25;
 
     // Iniciales por jugador
     public static final int INITIAL_GOLD = 200;

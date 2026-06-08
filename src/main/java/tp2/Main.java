@@ -17,10 +17,10 @@ public class Main {
         try {
             String mapFile = view.askMapFile();
             String fleetFile = view.askFleetFile();
+            EventManager eventManager = EventManager.getInstance();
 
             GameState gameState = loader.loadGame(mapFile, fleetFile);
             CombatSystem combatSystem = new CombatSystem(gameState.getBoard());
-            EventManager eventManager = new EventManager();
 
             GameController controller = new GameController(gameState, view, combatSystem, eventManager);
 

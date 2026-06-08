@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static tp2.util.RandomUtils.nextInt;
+
 /**
  * Estado central del juego. Modelo en el patrón MVC/MVP.
  * Contiene:
@@ -161,9 +163,11 @@ public class GameState {
      * @param effect efecto a aplicar
      */
     public void applyEffectToAllShips(ShipEffect effect){
-        for(Player player : this.players)
-            for (Ship ship : player.getActiveFleet())
+        for(Player player : this.players) {
+            for (Ship ship : player.getActiveFleet()) {
                 ship.addEffect(effect);
+            }
+        }
     }
 
     /**
@@ -171,9 +175,11 @@ public class GameState {
      * @param damage daño a aplicar
      */
     public void applyDamageToAllShips(int damage){
-        for(Player player : this.getPlayers())
-            for (Ship ship : player.getActiveFleet())
+        for(Player player : this.getPlayers()) {
+            for (Ship ship : player.getActiveFleet()) {
                 ship.receiveDamage(damage);
+            }
+        }
     }
 
     /**
@@ -212,9 +218,8 @@ public class GameState {
     }
 
     public String applyEffectToCurrentPlayerRandomShip(ShipEffect effect){
-        Random random = new Random();
         List<Ship> fleet = this.currentPlayer.getActiveFleet();
-        Ship ship = fleet.get(random.nextInt(fleet.size()));
+        Ship ship = fleet.get(nextInt(fleet.size()));
         ship.addEffect(effect);
         return ship.getName();
     }

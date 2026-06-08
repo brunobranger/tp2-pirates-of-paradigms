@@ -4,6 +4,9 @@ import tp2.model.board.Position;
 import tp2.model.player.Player;
 import tp2.model.ship.Ship;
 
+import static tp2.model.resource.ResourceCosts.FLOATING_TREASURE_GOLD;
+import static tp2.model.resource.ResourceCosts.FLOATING_TREASURE_HP_REPAIR;
+
 /**
  * Tesoro flotante generado por el evento "Tesoro flotante".
  * Distinto al DynasticTreasure: este es temporal, tiene un timer de desaparición
@@ -15,8 +18,6 @@ public class FloatingTreasure implements Treasure{
     private final Position position;
     private int turnsUntilDisappear;
     private boolean claimed;
-    private final int PROVIDED_GOLD = 10;
-    private final int PROVIDED_HP = 25;
 
     public FloatingTreasure(Position position, int turnsUntilDisappear) {
         this.position = position;
@@ -27,13 +28,13 @@ public class FloatingTreasure implements Treasure{
     // -------------------------------------------------------------------------
     // Interfaz Treasure
     // -------------------------------------------------------------------------
-    public String getType(){
-        return "FLOATING";
+    public TreasureType getType(){
+        return TreasureType.FLOATING;
     }
 
     public void onPickUp(Ship ship, Player player){
-        player.getResources().earnGold(PROVIDED_GOLD);
-        ship.repairHp(PROVIDED_HP);
+        player.addGold(FLOATING_TREASURE_GOLD);
+        ship.repairHp(FLOATING_TREASURE_HP_REPAIR);
     }
 
     // -------------------------------------------------------------------------

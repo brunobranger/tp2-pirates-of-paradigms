@@ -41,6 +41,25 @@ public class Player {
     }
 
     // -------------------------------------------------------------------------
+    // Recursos
+    // -------------------------------------------------------------------------
+
+    public void addGold(int gold) {
+        if (gold < 0) {
+            throw new IllegalArgumentException("No se puede recibir oro negativo!");
+        }
+
+        this.resources.earnGold(gold);
+    }
+
+    public void spendGold(int gold) {
+        if (gold < 0) {
+            throw new IllegalArgumentException("No se puede recibir oro negativo!");
+        }
+        this.resources.spendGold(gold);
+    }
+
+    // -------------------------------------------------------------------------
     // Flota
     // -------------------------------------------------------------------------
 
