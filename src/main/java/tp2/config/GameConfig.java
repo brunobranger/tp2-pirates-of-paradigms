@@ -2,9 +2,7 @@ package tp2.config;
 
 /**
  * Constantes de configuración del juego.
- * Centralizar aquí facilita ajustar balance sin buscar números mágicos.
- *
- * Hipótesis: valores iniciales — documentar en informe.
+ * Centralizar aquí facilita ajustar el balance sin lidiar con números mágicos.
  */
 public final class GameConfig {
 
@@ -21,7 +19,7 @@ public final class GameConfig {
     public static final int REEF_DAMAGE = 15;
 
     // Niebla
-    public static final int FOG_RANGE_REDUCTION = 2; // casillas que se restan al rango en niebla
+    public static final int FOG_RANGE_REDUCTION = 2; // Casillas que se restan al rango en niebla
 
     // Reparación
     public static final int REPAIR_IN_PORT_HP   = 30;
