@@ -33,7 +33,7 @@ public class GameLoader {
         this.gameInitializer = new GameInitializer();
     }
 
-    public GameState loadGame(tring mapFileName, String fleetFileName) throws IOException {
+    public GameState loadGame(String mapFileName, String fleetFileName) throws IOException {
         Board board = boardLoader.load(mapFileName);
         Player player1 = fleetLoader.load(fleetFileName, Faction.CRIMSON_BROTHERHOOD);
         Player player2 = fleetLoader.load(fleetFileName, Faction.ABYSS_CROWN);

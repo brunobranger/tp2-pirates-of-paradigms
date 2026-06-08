@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 
-import tp2.model.board.Board;
-import tp2.model.board.Position;
+import tp2.model.board.*;
 
 /**
  * Responsable únicamente de construir un Board desde un JSON.
@@ -26,9 +25,18 @@ public class BoardLoader {
         Board board = new Board(rows, cols);
         JsonNode cells = root.get("cells");
 
-        if (cells != null) {
-            for (JsonNode cellNode : cells) {
-                board.configureCellAt(createPosition(cellNode), cellNode);
+
+        // Revisar OCP aca con el if, hay que pensar una manera de abstraernos del tipo de terreno
+        // Si bien justo MARINE_CURRENT es el unico con ese detalle, esta abierto a modificaciones
+        for (JsonNode cellNode : cells) {
+            Position pos = createPosition(cellNode);
+            TerrainType terrain = TerrainType.valueOf(cellNode.get("terrain").asText());
+            Cell cell = board.getCellAt(pos);
+            cell.setTerrain(terrain);
+
+            if (terrain == TerrainType.MARINE_CURRENT) {
+                Direction dir = Direction.valueOf(cellNode.get("direction").asText());
+                cell.setCurrentDirection(dir);
             }
         }
 
