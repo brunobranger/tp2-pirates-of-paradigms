@@ -5,7 +5,6 @@ import tp2.model.ship.ShipType;
 
 /**
  * Galeón: barco pesado, lento pero resistente y de gran armamento.
- * Estadísticas sugeridas: HP=150, ATK=40, DEF=30, MOV=2, RNG=5
  */
 public class Galleon extends Ship {
 

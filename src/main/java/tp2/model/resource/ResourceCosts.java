@@ -3,8 +3,6 @@ package tp2.model.resource;
 /**
  * Constantes de costo de recursos para todas las acciones del juego.
  * Centralizar aquí facilita el balanceo sin buscar números mágicos en el código.
- *
- * Hipótesis: valores iniciales sugeridos — documentar en informe.
  */
 public final class ResourceCosts {
 

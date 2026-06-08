@@ -4,9 +4,6 @@ import tp2.model.ship.type.*;
 
 /**
  * Fábrica de barcos.
- * Patrón: Factory Method — centraliza la creación de Ships según su tipo.
- * Evita que el cliente (GameController, config loader) dependa de las clases
- * concretas (Sloop, Frigate, etc.), respetando DIP.
  */
 public class ShipFactory {
 

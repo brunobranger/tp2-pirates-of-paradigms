@@ -21,7 +21,7 @@ public class TreasureInPortStrategy implements VictoryStrategy {
                 Cell currentCell = state.getBoard().getCellAt(position);
 
                 if (currentCell.isOwnedPortOf(player)) {
-                    treasureOpponent.dropForSafePort(position);
+                    treasureOpponent.deliver(position);
                     return player;
                 }
             }

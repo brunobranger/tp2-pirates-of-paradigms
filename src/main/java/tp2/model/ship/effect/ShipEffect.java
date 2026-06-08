@@ -5,12 +5,6 @@ import tp2.model.ship.Ship;
 
 /**
  * Interfaz para efectos de estado sobre un barco.
- *
- * Patrón: Strategy — cada efecto sabe cómo aplicarse, cuánto dura y cuándo expira.
- * El Ship delega en sus efectos activos sin conocer los detalles de cada uno (OCP).
- *
- * Ejemplos de efectos: Incendio, Inmovilización, MovimientoReducido, AtaqueBloqueado.
- *
  */
 public interface ShipEffect {
 
@@ -51,6 +45,11 @@ public interface ShipEffect {
         return baseRange;
     }
 
+    /**
+     * Modifica el ataque base para los disparos del barco.
+     * @param baseAttack ataque base
+     * @return ataque modificado
+     */
     default int modifyAttack(int baseAttack) {
         return baseAttack;
     }
@@ -82,7 +81,5 @@ public interface ShipEffect {
      *
      * @param ship barco afectado
      */
-    default void applyEndOfTurnDamage(Ship ship) {
-        // la mayoría no hace nada
-    }
+    default void applyEndOfTurnDamage(Ship ship) {}
 }

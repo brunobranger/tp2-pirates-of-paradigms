@@ -5,7 +5,6 @@ import java.util.Random;
 
 /**
  * Utilidades para operaciones aleatorias.
- * Centralizadas aquí para facilitar el testing (se puede inyectar un Random con seed fija).
  */
 public final class RandomUtils {
 

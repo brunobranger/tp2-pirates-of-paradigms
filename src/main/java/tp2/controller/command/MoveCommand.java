@@ -37,24 +37,22 @@ public class MoveCommand implements ShipCommand {
         var player = gameState.getCurrentPlayer();
         var cell = gameState.getBoard().getCellAt(destination);
 
-        // Si el barco llegó a una celda con tesoro, lo recoge
         if (cell.getTreasure() != null) {
             var treasure = cell.pickUpTreasure();
             treasure.onPickUp(ship, player);
         }
 
-        // Si el barco llegó a un arrecife, recibe daño
         if (cell.getTerrain() == TerrainType.REEF) {
             ship.receiveDamage(GameConfig.REEF_DAMAGE);
         }
 
         if (cell.getTerrain() == TerrainType.STORM) {
-            ship.addEffect(new ReducedMovementEffect(5)); //  cantidad de turnos?
+            ship.addEffect(new ReducedMovementEffect(5));
         }
 
         if (cell.getTerrain() == TerrainType.FOG) {
             ship.addEffect(new ReducedMovementEffect(5));
-            ship.addEffect(new ReducedAttackEffect(5, 0.4)); // por un turno y reduce el ataque un 40%
+            ship.addEffect(new ReducedAttackEffect(5, 0.4));
         }
     }
 }

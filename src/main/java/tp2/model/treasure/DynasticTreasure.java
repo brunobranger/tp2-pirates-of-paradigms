@@ -5,9 +5,8 @@ import tp2.model.player.Player;
 import tp2.model.ship.Ship;
 
 /**
- * Tesoro dinástico: ítem único por jugador cuya captura y transporte al puerto
+ * Item único por jugador cuya captura y transporte al puerto
  * propio es una de las condiciones de victoria.
- * Principio: SRP — la condición de victoria no vive acá, sino en GameState.
  */
 public class DynasticTreasure implements Treasure{
 
@@ -33,6 +32,7 @@ public class DynasticTreasure implements Treasure{
 
     public void onPickUp(Ship ship, Player player){
         ship.pickUpTreasure(this);
+        pickUp(ship);
     }
 
     // -------------------------------------------------------------------------
@@ -42,7 +42,7 @@ public class DynasticTreasure implements Treasure{
     /** @return true si está siendo transportado por algún barco */
     public boolean isCarried() { return carrierTreasure != null; }
 
-    /** @return true si está flotando (barco portador hundido) */
+    /** @return true si está flotando */
     public boolean isFloating() { return isFloating; }
 
     /** @return true si está en el mapa sin barco que lo lleve */
@@ -67,7 +67,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void pickUp(Ship ship) {
         setCarrierTreasure(ship);
-        setPositionCarrierTreasure(null);
+        updatePositionWithCarrier(null);
         setFloating(false);
     }
 
@@ -79,7 +79,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void dropForSink(Position sinkPosition) {
         setCarrierTreasure(null);
-        setPositionCarrierTreasure(sinkPosition);
+        updatePositionWithCarrier(sinkPosition);
         setFloating(true);
     }
 
@@ -92,7 +92,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void dropForSafePort(Position portPosition) {
         setCarrierTreasure(null);
-        setPositionCarrierTreasure(portPosition);
+        updatePositionWithCarrier(portPosition);
         setFloating(false);
     }
 

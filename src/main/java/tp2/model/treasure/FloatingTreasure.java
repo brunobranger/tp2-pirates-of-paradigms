@@ -8,10 +8,8 @@ import static tp2.model.resource.ResourceCosts.FLOATING_TREASURE_GOLD;
 import static tp2.model.resource.ResourceCosts.FLOATING_TREASURE_HP_REPAIR;
 
 /**
- * Tesoro flotante generado por el evento "Tesoro flotante".
- * Distinto al DynasticTreasure: este es temporal, tiene un timer de desaparición
- * Principio: SRP — separar de DynasticTreasure porque tienen ciclo de vida y
- * propósito completamente distintos.
+ * Generado por el evento "Tesoro flotante".
+ * Es temporal, tiene un timer de desaparición
  */
 public class FloatingTreasure implements Treasure{
 

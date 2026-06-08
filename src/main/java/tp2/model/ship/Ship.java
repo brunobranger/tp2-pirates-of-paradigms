@@ -9,10 +9,6 @@ import java.util.List;
 
 /**
  * Clase abstracta base para todos los tipos de barco.
- * Cada subclase define sus estadísticas base (Template Method implícito).
- * Principio: LSP — cualquier Ship puede usarse donde se espera un Ship.
- * Principio: OCP — agregar un nuevo tipo de barco = nueva subclase, sin tocar Ship.
- * Estado de turno encapsulado en ShipTurnState para SRP.
  */
 public abstract class Ship {
 
@@ -27,8 +23,6 @@ public abstract class Ship {
     private DynasticTreasure carriedTreasure;
     private boolean hasMovedThisTurn;
     private boolean hasAttackedThisTurn;
-
-    // Efectos de estado activos (Strategy: cada efecto sabe cómo aplicarse)
     private final List<ShipEffect> activeEffects;
 
     protected Ship(String name, int maxHp, int atk, int def, int mov, int rng) {
@@ -43,7 +37,7 @@ public abstract class Ship {
     }
 
     // -------------------------------------------------------------------------
-    // Tipo de barco (Template Method / polimorfismo)
+    // Tipo de barco
     // -------------------------------------------------------------------------
 
     /**
@@ -65,7 +59,6 @@ public abstract class Ship {
 
     /**
      * Recibe daño luego de aplicar la defensa.
-     * Daño efectivo = max(0, damage - DEF).
      * Si HP llega a 0, el barco queda en estado hundido.
      *
      * @param rawDamage daño bruto del atacante (su ATK)
@@ -107,7 +100,6 @@ public abstract class Ship {
 
     /**
      * Calcula el movimiento efectivo del barco considerando efectos activos
-     * (tormenta, vendaval, viento favorable, etc.).
      *
      * @return cantidad de casillas que puede moverse este turno
      */
@@ -121,7 +113,6 @@ public abstract class Ship {
 
     /**
      * Calcula el rango de disparo efectivo considerando efectos activos
-     * (niebla, viento favorable, etc.).
      *
      * @return rango de disparo efectivo
      */
@@ -200,7 +191,7 @@ public abstract class Ship {
     }
 
     // -------------------------------------------------------------------------
-    // Efectos de estado (Incendio, Inmovilización, etc.)
+    // Efectos de estado
     // -------------------------------------------------------------------------
 
     /**
@@ -286,6 +277,10 @@ public abstract class Ship {
     public boolean hasMovedThisTurn() { return hasMovedThisTurn; }
     public boolean hasAttackedThisTurn() { return hasAttackedThisTurn; }
     public List<ShipEffect> getActiveEffects() { return List.copyOf(activeEffects); }
+
+    // -------------------------------------------------------------------------
+    // Setters
+    // -------------------------------------------------------------------------
 
     public void setPosition(Position position) { this.position = position; }
 }

@@ -5,8 +5,6 @@ import tp2.model.ship.ShipType;
 
 /**
  * Barco Insignia: pesado, mejores estadísticas que el resto.
- * Estadísticas sugeridas: HP=250, ATK=60, DEF=50, MOV=2, RNG=6
- * Nota de diseño: la condición de victoria no vive acá (SRP), sino en GameState.
  */
 public class Flagship extends Ship {
 
