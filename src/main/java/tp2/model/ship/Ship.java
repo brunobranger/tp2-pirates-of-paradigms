@@ -151,7 +151,6 @@ public abstract class Ship {
      * @return true si el barco puede moverse (no atacó, no se movió, no está incendiado ni inmovilizado)
      */
     public boolean canMove() {
-
         if (isSunk()) {
             return false;
         }
@@ -160,31 +159,25 @@ public abstract class Ship {
             return false;
         }
 
-        boolean canMoveAfterAttack = activeEffects.stream().anyMatch(ShipEffect::allowsMoveAfterAttack);
+        if (hasAttackedThisTurn) {
+            boolean canMoveAfterAttack = activeEffects.stream().anyMatch(ShipEffect::allowsMoveAfterAttack);
 
-        if (hasAttackedThisTurn && !canMoveAfterAttack) {
-            return false;
+            if (!canMoveAfterAttack) {
+                return false;
+            }
         }
 
         return activeEffects.stream().noneMatch(ShipEffect::preventsMovement);
     }
-
     /**
      * @return true si el barco puede atacar (no atacó ya y no está incendiado)
      */
     public boolean canAttack() {
-
         if (isSunk()) {
             return false;
         }
 
         if (hasAttackedThisTurn) {
-            return false;
-        }
-
-        boolean canAttackAfterMove = activeEffects.stream().anyMatch(ShipEffect::allowsAttackAfterMove);
-
-        if (hasMovedThisTurn && !canAttackAfterMove) {
             return false;
         }
 

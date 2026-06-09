@@ -84,10 +84,6 @@ public class EventManager {
         this.availableEvents.add(event);
     }
 
-    public void reset() {
-        turnsSinceLastEvent = 0;
-    }
-
     /**
      * Selecciona un evento al azar de la lista disponible.
      *
