@@ -18,15 +18,12 @@ import tp2.model.player.Player;
  * Coordina los distintos loaders especializados sin construir el dominio directamente.
  */
 public class GameLoader {
-    private final String resourcesBasePath;
     private final BoardLoader boardLoader;
     private final FleetLoader fleetLoader;
     private final GameInitializer gameInitializer;
 
-    public GameLoader(String resourcesBasePath) {
-        this.resourcesBasePath = resourcesBasePath;
-
-        JsonLoader jsonLoader = new JsonLoader(resourcesBasePath);
+    public GameLoader() {
+        JsonLoader jsonLoader = new JsonLoader();
 
         this.boardLoader = new BoardLoader(jsonLoader);
         this.fleetLoader = new FleetLoader(jsonLoader);
@@ -70,7 +67,7 @@ public class GameLoader {
     }
 
     private URL getResource(String folder) {
-        String fullPath = resourcesBasePath + "/" + folder;
+        String fullPath = "/" + folder;
         URL resource = getClass().getClassLoader().getResource(fullPath);
         if (resource == null) throw new IllegalStateException("No existe el recurso: " + fullPath);
 

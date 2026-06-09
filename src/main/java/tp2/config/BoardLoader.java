@@ -25,9 +25,6 @@ public class BoardLoader {
         Board board = new Board(rows, cols);
         JsonNode cells = root.get("cells");
 
-
-        // Revisar OCP aca con el if, hay que pensar una manera de abstraernos del tipo de terreno
-        // Si bien justo MARINE_CURRENT es el unico con ese detalle, esta abierto a modificaciones
         for (JsonNode cellNode : cells) {
             Position pos = createPosition(cellNode);
             TerrainType terrain = TerrainType.valueOf(cellNode.get("terrain").asText());

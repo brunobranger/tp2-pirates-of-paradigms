@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         GameView view = new ConsoleView();
-        GameLoader loader = new GameLoader("resources");
+        GameLoader loader = new GameLoader();
 
         try {
             String mapFile = view.askMapFile();
@@ -27,7 +27,8 @@ public class Main {
             controller.start();
 
         } catch (Exception e) {
-            System.err.println("Error initiating game: " + e.getMessage());
+            //System.err.println("Error initiating game: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

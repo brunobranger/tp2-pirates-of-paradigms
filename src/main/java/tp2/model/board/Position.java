@@ -4,9 +4,6 @@ import java.util.Objects;
 
 /**
  * Value Object que representa una posición (fila, columna) en el tablero.
- *
- * Principio: inmutabilidad — una posición no cambia; se crean posiciones nuevas.
- * Esto evita efectos secundarios al compartir referencias entre objetos.
  */
 public final class Position {
 

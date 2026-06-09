@@ -20,7 +20,7 @@ import tp2.model.treasure.Treasure;
 public class Cell {
 
     private final Position position;
-    private final TerrainType baseTerrain;
+    private TerrainType baseTerrain;
     private TerrainType currentTerrain;
     private int climateEffectDuration = 0;
     private TerrainType climateOverride = null; //null si no hay un clima temporal afectando la celda
@@ -79,8 +79,10 @@ public class Cell {
      * @throws IllegalStateException si la casilla ya está ocupada
      */
     public void placeShip(Ship ship) {
-        if (this.isOccupied()) throw new IllegalStateException("The cell is already occupied");
+        if (this.isOccupied()) throw new IllegalStateException("The cell is already occupied.");
+        if (this.baseTerrain == TerrainType.ISLAND) throw new IllegalStateException("Cannot place a ship on an island terrain.");
         occupant = ship;
+        ship.setPosition(this.position);
     }
 
     /**
@@ -140,6 +142,10 @@ public class Cell {
      */
     public void setTerrain(TerrainType newTerrain) {
         this.currentTerrain = newTerrain;
+    }
+
+    public void changeTerrain(TerrainType newTerrain) {
+        this.baseTerrain = newTerrain;
     }
 
     public void applyTemporalClimate(TerrainType climate, int duration) {

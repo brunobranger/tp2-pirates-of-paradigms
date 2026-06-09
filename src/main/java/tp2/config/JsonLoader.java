@@ -10,12 +10,9 @@ import java.io.InputStream;
  * Centraliza la lectura de archivos JSON desde resources.
  */
 public class JsonLoader {
-
-    private final String resourcesBasePath;
     private final ObjectMapper mapper;
 
-    public JsonLoader(String resourcesBasePath) {
-        this.resourcesBasePath = resourcesBasePath;
+    public JsonLoader() {
         this.mapper = new ObjectMapper();
     }
 
@@ -27,12 +24,10 @@ public class JsonLoader {
      * @throws IOException si el archivo no existe o no puede leerse
      */
     public JsonNode readJson(String relativePath) throws IOException {
-        String fullPath = resourcesBasePath + "/" + relativePath;
-
-        InputStream is = getClass().getClassLoader().getResourceAsStream(fullPath);
+        InputStream is = getClass().getClassLoader().getResourceAsStream(relativePath);
 
         if (is == null) {
-            throw new IOException("File not found: " + fullPath);
+            throw new IOException("File not found: " + relativePath);
         }
 
         return mapper.readTree(is);

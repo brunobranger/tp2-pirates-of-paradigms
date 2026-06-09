@@ -19,6 +19,8 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.function.Function;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Implementacion por consola de {@link GameView}.
  * Responsabilidad: mostrar informacion de la partida y transformar el input
@@ -114,11 +116,12 @@ public class ConsoleView implements GameView {
         out.println();
         out.println("1. Ver estado de la partida");
         out.println("2. Utilizar barco");
-        out.println("3. Rendirse");
+        out.println("3. Finalizar turno");
+        out.println("4. Rendirse");
         out.print("Ingrese opcion: ");
         String input = readLine();
         try {
-            return Integer.parseInt(input);
+            return parseInt(input);
         } catch (NumberFormatException exception) {
             return -1;
         }
@@ -273,6 +276,12 @@ public class ConsoleView implements GameView {
         showError("Opcion invalida. Intente nuevamente.");
     }
 
+    @Override
+    public void showInitShipPlace() {
+        showMessage("");
+        showMessage("--- FASE DE DESPLIEGUE INICIAL DE FLOTAS ---");
+    }
+
     /** Muestra una lista de archivos preseleccionados por el loader. */
     private String askFile(String label, List<String> files) {
         return askListItem("Seleccione archivo de " + label + ":", files,
@@ -307,8 +316,8 @@ public class ConsoleView implements GameView {
             return null;
         }
         try {
-            return new Position(Integer.parseInt(coordinates[0].trim()),
-                    Integer.parseInt(coordinates[1].trim()));
+            return new Position(parseInt(coordinates[0].trim()),
+                    parseInt(coordinates[1].trim()));
         } catch (NumberFormatException exception) {
             return null;
         }
@@ -339,7 +348,7 @@ public class ConsoleView implements GameView {
                 return null;
             }
             try {
-                int index = Integer.parseInt(input) - 1;
+                int index = parseInt(input) - 1;
                 if (index >= 0 && index < options.size()) {
                     return options.get(index);
                 }

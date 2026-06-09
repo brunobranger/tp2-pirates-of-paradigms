@@ -1,6 +1,8 @@
 package tp2.controller;
 
 import tp2.controller.command.*;
+import tp2.model.board.Board;
+import tp2.model.board.Cell;
 import tp2.model.game.GameState;
 import tp2.model.board.Position;
 import tp2.model.combat.CombatSystem;
@@ -8,12 +10,16 @@ import tp2.model.event.EventManager;
 import tp2.model.event.GameEvent;
 import tp2.model.player.Player;
 import tp2.model.ship.Ship;
+import tp2.model.treasure.DynasticTreasure;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static tp2.model.board.TerrainType.PORT;
+import static tp2.model.ship.ShipType.FLAGSHIP;
 import static tp2.util.RandomUtils.coinFlip; // import estatico de Coin
 
 /**
@@ -79,15 +85,53 @@ public class GameController {
         view.showBoard(gameState);
         view.showTurnSummary(gameState);
 
+        executeInitialDeployment();
+
         boolean turnEnded = false;
         while (!turnEnded) {
             turnEnded = handleMainMenuOption();
         }
 
-        applyEndOfTurnEffects();
+        if (gameState.isGameOver()) {
+            return;
+        }
+
+        handleFinishedTurn();
         checkAndApplyEvent();
         gameState.checkVictoryConditions();
         gameState.switchTurn();
+    }
+
+    /**
+     * Implementa puerto y barcos iniciales.
+     */
+    private void executeInitialDeployment() {
+        view.showInitShipPlace();
+        Board board = gameState.getBoard();
+
+        for (Player player : gameState.getPlayers()) {
+            Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
+            Position portPos = view.askPortPosition(player, validPositions);
+
+            Cell portCell = board.getCellAt(portPos);
+            portCell.changeTerrain(PORT);
+            portCell.assignPortOwner(player);
+
+            player.setHomePortPosition(portPos);
+            portCell.placeShip(player.getFlagship());
+
+            for (Ship ship : player.getActiveFleet()) {
+                if (ship.getType().equals(FLAGSHIP)) {
+                    continue;
+                }
+
+                Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
+                Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip);
+
+                Cell targetCell = board.getCellAt(shipPos);
+                targetCell.placeShip(ship);
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -103,7 +147,8 @@ public class GameController {
         return switch (option) {
             case 1 -> { showGameStatus(); yield false; }
             case 2 -> { handleShipAction(); yield false; }
-            case 3 -> { handleSurrender(); yield true; }
+            case 3 -> { handleFinishedTurn(); yield false; }
+            case 4 -> { handleSurrender(); yield true; }
             default -> { view.showInvalidOption(); yield false; }
         };
     }
@@ -220,8 +265,8 @@ public class GameController {
      * Aplica efectos de fin de turno: daño por incendio, tick de efectos activos,
      * reparación en puerto propio, limpieza de tesoros flotantes vencidos.
      */
-    private void applyEndOfTurnEffects() {
-        var currentPlayer = gameState.getCurrentPlayer();
+    private void handleFinishedTurn() {
+        Player currentPlayer = gameState.getCurrentPlayer();
 
         // Daño por incendio y tick de efectos para cada barco activo
         for (Ship ship : currentPlayer.getActiveFleet()) {
@@ -229,13 +274,13 @@ public class GameController {
             ship.resetTurnState();
 
             // Reparación automática en puerto propio al finalizar turno
-            var cell = gameState.getBoard().getCellAt(ship.getPosition());
+            Cell cell = gameState.getBoard().getCellAt(ship.getPosition());
             if (cell.isOwnedPortOf(currentPlayer)) {
                 ship.repairHp(tp2.config.GameConfig.PORT_REPAIR_AMOUNT);
 
                 // Condición de victoria: tesoro enemigo en puerto propio
                 if (ship.isCarryingTreasure()) {
-                    var carried = ship.getCarriedTreasure();
+                    DynasticTreasure carried = ship.getCarriedTreasure();
                     if (!carried.getOwner().equals(currentPlayer)) {
                         gameState.checkVictoryConditions();
                     }

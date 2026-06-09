@@ -23,8 +23,8 @@ public class Board {
      * @param cols debe ser positiva
      */
     public Board(int rows, int cols) {
-        this.rows = setRows();
-        this.cols = setCols();
+        this.rows = setRows(rows);
+        this.cols = setCols(cols);
         this.grid = new Cell[rows][cols];
 
         for (int i = 0; i < this.rows; i++) {
@@ -261,14 +261,14 @@ public class Board {
     public int getRows() { return rows; }
     public int getCols() { return cols; }
 
-    private int setCols() {
+    private int setCols(int cols) {
         if (cols < 0) {
             throw new IllegalArgumentException("cols must be positive");
         }
         return cols;
     }
 
-    private int setRows() {
+    private int setRows(int rows) {
         if (rows < 1) {
             throw new IllegalArgumentException("rows must be greater than 0");
         }

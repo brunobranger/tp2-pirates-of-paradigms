@@ -120,6 +120,8 @@ public interface GameView {
     /** Muestra la pantalla de fin de partida. */
     void showVictory(Player winner, VictoryCondition condition);
 
+    void showInitShipPlace();
+
     // -------------------------------------------------------------------------
     // Mensajes de error / feedback
     // -------------------------------------------------------------------------
