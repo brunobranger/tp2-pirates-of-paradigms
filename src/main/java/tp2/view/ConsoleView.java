@@ -292,6 +292,7 @@ public class ConsoleView implements GameView {
         out.println(prompt);
         if (gameState != null) {
             out.println("Las zonas permitidas están marcadas con '•' en el mapa:");
+            out.println("No puede colocar elementos sobre puertos P o islas I.");
             out.println();
             out.println(boardRenderer.render(gameState, validPositions));
         }
