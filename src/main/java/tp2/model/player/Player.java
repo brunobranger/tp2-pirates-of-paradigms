@@ -107,7 +107,7 @@ public class Player {
                 return (Flagship) ship;
             }
         }
-        throw new IllegalStateException("Flagship not found");
+        return null;
     }
 
     /**
