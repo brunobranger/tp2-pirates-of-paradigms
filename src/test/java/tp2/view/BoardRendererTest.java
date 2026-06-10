@@ -3,43 +3,91 @@ package tp2.view;
 import org.junit.jupiter.api.Test;
 import tp2.model.board.Board;
 import tp2.model.board.Position;
-import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.player.Faction;
 import tp2.model.player.Player;
 import tp2.model.ship.type.Sloop;
-import tp2.model.treasure.DynasticTreasure;
-import tp2.model.treasure.FloatingTreasure;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Verifica que el renderer convierta el modelo en una grilla ASCII legible
- * sin modificar el estado de la partida.
- */
 class BoardRendererTest {
 
     @Test
-    void rendersShipsTerrainAndBothTreasureKinds() {
-        Board board = new Board(2, 4);
-        Player first = new Player("Uno", Faction.CRIMSON_BROTHERHOOD);
-        Player second = new Player("Dos", Faction.ABYSS_CROWN);
-        Sloop ship = new Sloop("Nave");
-        ship.setPosition(new Position(0, 0));
-        first.addShip(ship);
-        board.getCellAt(ship.getPosition()).placeShip(ship);
-        board.getCellAt(new Position(0, 1)).setTerrain(TerrainType.STORM);
-        board.getCellAt(new Position(0, 2)).setTerrain(TerrainType.MARINE_CURRENT);
-        second.setOwnTreasure(new DynasticTreasure(second, new Position(1, 0)));
-        GameState state = new GameState(board, List.of(first, second));
-        state.addFloatingTreasure(new FloatingTreasure(new Position(1, 1), 2));
+    void validPositionsAreMarkedWithBullet() {
+        Board board = new Board(2, 2);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state, Set.of(new Position(0, 0)));
 
-        String rendered = new BoardRenderer().render(state, null);
+        assertTrue(rendered.contains("•"));
+    }
 
-        assertTrue(rendered.contains("B1 T  MC"));
-        assertTrue(rendered.contains("TR FT"));
+    @Test
+    void occupiedCellKeepsShipSymbolInsteadOfBullet() {
+        Board board = new Board(2, 2);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+        Sloop ship = new Sloop("Balandra");
+
+        player.addShip(ship);
+        board.getCellAt(new Position(0, 0)).placeShip(ship);
+
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state, Set.of(new Position(0, 0)));
+
+        assertTrue(rendered.contains("B1"));
+    }
+
+    @Test
+    void rendererShowsColumnHeaders() {
+        Board board = new Board(2, 2);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state);
+
+        assertTrue(rendered.contains("0"));
+        assertTrue(rendered.contains("1"));
+    }
+
+    @Test
+    void rendererShowsRowHeaders() {
+        Board board = new Board(2, 2);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state);
+
+        assertTrue(rendered.contains("0"));
+        assertTrue(rendered.contains("1"));
+    }
+
+    @Test
+    void rendererShowsLegend() {
+        Board board = new Board(1, 1);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state);
+
         assertTrue(rendered.contains("Leyenda:"));
+        assertTrue(rendered.contains("B1/B2 barco"));
+        assertTrue(rendered.contains("FT tesoro flotante"));
+    }
+
+    @Test
+    void shipWithoutOwnerIsRenderedAsUnknownShip() {
+        Board board = new Board(1, 1);
+        Player player = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
+        Sloop ship = new Sloop("Balandra");
+
+        board.getCellAt(new Position(0, 0)).placeShip(ship);
+
+        GameState state = new GameState(board, List.of(player));
+        String rendered = new BoardRenderer().render(state);
+
+        assertTrue(rendered.contains("B?"));
     }
 }

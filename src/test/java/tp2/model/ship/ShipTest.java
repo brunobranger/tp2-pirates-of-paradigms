@@ -58,4 +58,35 @@ class ShipTest {
         assertFalse(ship.isOnFire());
         assertTrue(ship.canAttack());
     }
+
+    @Test
+    void shipCanMoveThenAttack() {
+        Sloop ship = new Sloop("Nave");
+
+        ship.registerMove();
+
+        assertTrue(ship.canAttack());
+    }
+
+    @Test
+    void shipCannotMoveAfterAttackWithoutFavorableWind() {
+        Sloop ship = new Sloop("Nave");
+
+        ship.registerAttack();
+
+        assertFalse(ship.canMove());
+    }
+
+    @Test
+    void shipCanMoveAfterAttackWithFavorableWind() {
+        Sloop ship = new Sloop("Nave");
+
+        ship.addEffect(
+                new FavorableWindEffect(1, 2, 1)
+        );
+
+        ship.registerAttack();
+
+        assertTrue(ship.canMove());
+    }
 }
