@@ -1,22 +1,20 @@
 package tp2.controller.command;
 
-import tp2.config.GameConfig;
-import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
+import tp2.model.game.system.MovementResolver;
 import tp2.model.board.Position;
-import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
-import tp2.model.ship.effect.ReducedAttackEffect;
-import tp2.model.ship.effect.ReducedMovementEffect;
 
 public class MoveCommand implements ShipCommand {
 
     private final Ship ship;
     private final Position destination;
+    private final MovementResolver movementResolver;
 
-    public MoveCommand(Ship ship, Position destination) {
+    public MoveCommand(Ship ship, Position destination, MovementResolver movementResolver) {
         this.ship = ship;
         this.destination = destination;
+        this.movementResolver = movementResolver;
     }
 
     @Override
@@ -30,29 +28,6 @@ public class MoveCommand implements ShipCommand {
 
     @Override
     public void execute(GameState gameState) {
-        gameState.getBoard().moveShip(ship, destination);
-        gameState.getBoard().applyMarineCurrentIfPresent(ship);
-        ship.registerMove();
-
-        var player = gameState.getCurrentPlayer();
-        var cell = gameState.getBoard().getCellAt(destination);
-
-        if (cell.getTreasure() != null) {
-            var treasure = cell.pickUpTreasure();
-            treasure.onPickUp(ship, player);
-        }
-
-        if (cell.getTerrain() == TerrainType.REEF) {
-            ship.receiveDamage(GameConfig.REEF_DAMAGE);
-        }
-
-        if (cell.getTerrain() == TerrainType.STORM) {
-            ship.addEffect(new ReducedMovementEffect(5));
-        }
-
-        if (cell.getTerrain() == TerrainType.FOG) {
-            ship.addEffect(new ReducedMovementEffect(5));
-            ship.addEffect(new ReducedAttackEffect(5, 0.4));
-        }
+        movementResolver.resolveMovement(gameState, ship, destination);
     }
 }

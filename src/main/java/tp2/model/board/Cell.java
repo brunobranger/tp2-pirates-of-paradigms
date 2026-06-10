@@ -141,11 +141,12 @@ public class Cell {
      * @param newTerrain nuevo tipo de terreno
      */
     public void setTerrain(TerrainType newTerrain) {
+        this.baseTerrain = newTerrain;
         this.currentTerrain = newTerrain;
     }
 
     public void changeTerrain(TerrainType newTerrain) {
-        this.baseTerrain = newTerrain;
+        setTerrain(newTerrain);
     }
 
     public void applyTemporalClimate(TerrainType climate, int duration) {

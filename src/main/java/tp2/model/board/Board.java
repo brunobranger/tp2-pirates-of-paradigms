@@ -25,28 +25,15 @@ public class Board {
     public Board(int rows, int cols) {
         this.rows = setRows(rows);
         this.cols = setCols(cols);
-        this.grid = new Cell[rows][cols];
-
-        for (int i = 0; i < this.rows; i++) {
-            for (int j = 0; j < this.cols; j++) {
-               this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
-            }
-        }
+        this.grid = new Cell[this.rows][this.cols];
+        initializeGrid();
     }
 
     /**
      * Sobrecarga de constructor en caso de no enviar argumentos iniciales.
      */
     public Board() {
-        this.rows = GameConfig.DEFAULT_BOARD_ROWS;
-        this.cols = GameConfig.DEFAULT_BOARD_COLS;
-        this.grid = new Cell[rows][cols];
-
-        for (int i = 0; i < this.rows; i++) {
-            for (int j = 0; j < this.cols; j++) {
-                this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
-            }
-        }
+        this(GameConfig.DEFAULT_BOARD_ROWS, GameConfig.DEFAULT_BOARD_COLS);
     }
 
     // -------------------------------------------------------------------------
@@ -63,6 +50,14 @@ public class Board {
     public Cell getCellAt(Position position) {
         if (!this.isWithinBounds(position)) throw new IllegalArgumentException("The cell is not within the board bounds");
         return grid[position.getRow()][position.getCol()];
+    }
+
+    public Ship getShipAt(Position position) {
+        return getCellAt(position).getOccupant();
+    }
+
+    public Cell getCellAtShipPosition(Ship ship) {
+        return getCellAt(ship.getPosition());
     }
 
     /**
@@ -131,6 +126,10 @@ public class Board {
         getCellAt(origin).removeShip();
         getCellAt(destination).placeShip(ship);
         ship.setPosition(destination);
+    }
+
+    public void placeShip(Ship ship, Position destination) {
+        getCellAt(destination).placeShip(ship);
     }
 
     /**
@@ -256,6 +255,14 @@ public class Board {
             cell.placeTreasure(ship.dropTreasure());
         }
         cell.removeShip();
+    }
+
+    private void initializeGrid() {
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                this.grid[i][j] = new Cell(new Position(i, j), TerrainType.OPEN_SEA);
+            }
+        }
     }
 
     public int getRows() { return rows; }
