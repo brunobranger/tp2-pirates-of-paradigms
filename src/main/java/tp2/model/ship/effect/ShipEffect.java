@@ -72,10 +72,6 @@ public interface ShipEffect {
         return false;
     }
 
-    default boolean allowsAttackAfterMove() {
-        return false;
-    }
-
     /**
      * Aplica el daño por tick del efecto al barco (ej. Incendio daña al finalizar turno).
      *
