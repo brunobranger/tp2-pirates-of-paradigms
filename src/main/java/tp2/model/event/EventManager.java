@@ -8,17 +8,9 @@ import java.util.Random;
 
 /**
  * Gestiona la frecuencia y selección de eventos aleatorios.
- *
- * Hipótesis de frecuencia (documentar en informe):
+ * Hipótesis de frecuencia::
  *   - Un evento puede ocurrir al finalizar ciertos turnos (ej. cada 3 turnos).
  *   - Se elige al azar entre los eventos disponibles con probabilidades iguales.
- *
- * Patrón: el EventManager actúa como Simple Factory de GameEvent — elige
- * qué evento instanciar según RNG, sin que el controlador sepa los tipos concretos.
- * A su vez se eligió modelarlo como un Singleton ya que sólo debe existir una única
- * instancia durante el juego.
- *
- * Principio: OCP — registrar un nuevo evento = agregarlo a la lista AVAILABLE_EVENTS.
  */
 public class EventManager {
 

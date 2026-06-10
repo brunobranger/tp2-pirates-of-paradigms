@@ -33,9 +33,6 @@ import static tp2.util.RandomUtils.coinFlip; // import estatico de Coin
  *   - Delegar en GameState las modificaciones del modelo.
  *   - Delegar en GameView la presentación y el input.
  *   - Orquestar el sistema de combate y eventos.
- * Principio: SRP — el controlador no imprime ni calcula daño; delega.
- * Principio: DIP — depende de GameView (interfaz), no de una consola específica.
- * Patrón Command: cada acción del jugador se encapsula en un ShipCommand.
  */
 public class GameController {
 

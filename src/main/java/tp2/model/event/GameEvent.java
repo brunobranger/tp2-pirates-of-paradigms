@@ -4,15 +4,6 @@ import tp2.model.game.GameState;
 
 /**
  * Interfaz para todos los eventos aleatorios del juego.
- *
- * Patrón: Strategy — cada evento encapsula su lógica de aplicación.
- * El GameController no sabe qué tipo de evento ocurre, solo llama apply().
- *
- * Patrón: también se puede ver como Command — el evento es una acción
- * diferida que se ejecuta sobre el GameState.
- *
- * Principio: OCP — agregar un evento nuevo = nueva clase que implementa GameEvent,
- * sin modificar el sistema de eventos existente.
  */
 public interface GameEvent {
 

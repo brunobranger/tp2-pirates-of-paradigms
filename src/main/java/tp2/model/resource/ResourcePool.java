@@ -4,12 +4,6 @@ import tp2.config.GameConfig;
 
 /**
  * Pool de recursos global de un jugador: oro y madera.
- *
- * Principio: SRP — esta clase solo gestiona los recursos, no las reglas de qué
- * acción cuesta qué (eso lo sabe quien invoca: GameController o las acciones).
- *
- * Principio: Tell Don't Ask — expone mé...s de acción (spend, earn) en lugar
- * de solo getters para que el cliente calcule si alcanza.
  */
 public class ResourcePool {
 

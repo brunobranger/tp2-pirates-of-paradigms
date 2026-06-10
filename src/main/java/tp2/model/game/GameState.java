@@ -19,12 +19,6 @@ import static tp2.util.RandomUtils.nextInt;
 
 /**
  * Estado central del juego. Modelo en el patrón MVC/MVP.
- * Contiene:
- *   - El tablero (Board)
- *   - El turno actual y quién juega
- *   - Tesoros flotantes activos (evento)
- *   - Condición de victoria detectada
- * Principio: SRP — GameState es el modelo puro. No imprime nada ni lee input.
  * El GameController lo modifica; la View lo lee para mostrarlo.
  */
 public class GameState {

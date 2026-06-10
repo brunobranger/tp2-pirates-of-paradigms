@@ -14,11 +14,6 @@ import java.util.Set;
 
 /**
  * Interfaz de la Vista en el patrón MVC/MVP.
- * Principio: DIP — GameController depende de esta abstracción, no de ConsoleView.
- * Principio: ISP — si la interfaz crece demasiado, separar en sub-interfaces
- *                  (ej. BoardView, MenuView, EventView).
- * Beneficio: permite crear una MockView para tests sin tocar la consola,
- * o una futura GUI implementando esta misma interfaz.
  */
 public interface GameView {
 

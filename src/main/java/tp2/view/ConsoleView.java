@@ -18,15 +18,9 @@ import java.util.function.Function;
 import static java.lang.Integer.parseInt;
 
 /**
- * Implementacion por consola de {@link GameView}.
+ * Implementacion por consola de GameView.
  * Responsabilidad: mostrar informacion de la partida y transformar el input
  * del usuario en elecciones simples para el controlador.
- * Principios:
- *   - SRP: no ejecuta acciones ni modifica el estado del juego.
- *   - DIP: el controlador depende de GameView y no de esta implementacion.
- *   - Inyeccion de dependencias: los streams y archivos disponibles pueden
- *     recibirse desde afuera para desacoplar la vista de la terminal real y
- *     facilitar tests automatizados.
  */
 public class ConsoleView implements GameView {
 
@@ -46,10 +40,11 @@ public class ConsoleView implements GameView {
 
     /**
      * Construye una vista con streams inyectados.
-     * Util para probar interacciones sin depender de una consola real.
      */
     public ConsoleView(InputStream input, PrintStream output, PrintStream error) {
-        this(input, output, error, List.of("default.json"), List.of("balanced.json"));
+        this(input, output, error,
+                List.of("predeterminada.json", "archipielago.json", "pasillos_actuales.json", "paso_de_arrecife.json"),
+                List.of("balanced.json"));
     }
 
     /**

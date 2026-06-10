@@ -9,8 +9,7 @@ import java.util.*;
 import static tp2.util.RandomUtils.nextInt;
 
 /**
- * El tablero de juego: una rejilla rectangular de {@link Cell}s.
- * Patrón: el tablero actúa como Facade para las consultas espaciales.
+ * El tablero de juego: una rejilla rectangular de Cell.
  */
 public class Board {
 

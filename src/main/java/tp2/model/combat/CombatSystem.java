@@ -5,9 +5,6 @@ import tp2.model.board.Board;
 
 /**
  * Sistema de combate: resuelve los ataques entre barcos.
- *
- * Patrón: se extrae la lógica de combate de Ship y Board para respetar SRP.
- * Ship sabe recibir daño; CombatSystem sabe las reglas del enfrentamiento.
  */
 public class CombatSystem {
 
