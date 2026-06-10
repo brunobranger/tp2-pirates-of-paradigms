@@ -3,9 +3,6 @@ package tp2.model.board;
 /**
  * Tipos de terreno marítimo definidos en el enunciado.
  * Cada tipo tiene efectos distintos sobre el movimiento y combate.
- *
- * Principio: OCP (Open-Closed) — para agregar un terreno nuevo, extender aquí y
- * en CellEffect sin modificar lógica existente de los barcos.
  */
 public enum TerrainType {
 

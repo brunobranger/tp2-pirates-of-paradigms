@@ -27,7 +27,7 @@ public class ExtinguishFireCommand implements ShipCommand {
     @Override
     public void execute(GameState gameState) {
         if (portService.isShipInCurrentPlayerPort(gameState, ship)) {
-            ship.extinguishFire(); // gratis en puerto propio
+            ship.extinguishFire();
         } else {
             gameState.getCurrentPlayer().getResources()
                     .spendWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);

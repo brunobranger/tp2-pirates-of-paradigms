@@ -3,9 +3,6 @@ package tp2.model.board;
 /**
  * Las 8 direcciones de movimiento posibles en el tablero.
  * Cada dirección encapsula su delta de fila y columna.
- *
- * Principio: Tell Don't Ask — se le "dice" a la posición en qué dirección
- * moverse, en lugar de que el cliente calcule los deltas manualmente.
  */
 public enum Direction {
 
