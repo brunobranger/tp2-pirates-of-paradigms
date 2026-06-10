@@ -80,7 +80,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void dropForSink(Position sinkPosition) {
         setCarrierTreasure(null);
-        updatePositionWithCarrier(sinkPosition);
+        this.positionCarrierTreasure = sinkPosition;
         setFloating(true);
     }
 
@@ -93,7 +93,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void dropForSafePort(Position portPosition) {
         setCarrierTreasure(null);
-        updatePositionWithCarrier(portPosition);
+        this.positionCarrierTreasure = portPosition;
         setFloating(false);
     }
 

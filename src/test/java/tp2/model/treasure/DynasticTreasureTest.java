@@ -35,9 +35,7 @@ class DynasticTreasureTest {
     void dropForSinkLeavesTreasureFloating() {
         Player owner = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
         DynasticTreasure treasure = new DynasticTreasure(owner, new Position(1, 1));
-
         treasure.dropForSink(new Position(3, 3));
-
         assertTrue(treasure.isFloating());
         assertEquals(new Position(3, 3), treasure.getPositionCarrierTreasure());
     }
@@ -47,9 +45,7 @@ class DynasticTreasureTest {
         Player owner = new Player("Jugador", Faction.CRIMSON_BROTHERHOOD);
         DynasticTreasure treasure = new DynasticTreasure(owner, new Position(1, 1));
         Position port = new Position(4, 4);
-
         treasure.deliver(port);
-
         assertEquals(port, treasure.getPositionCarrierTreasure());
         assertFalse(treasure.isFloating());
     }
