@@ -6,16 +6,6 @@ import tp2.model.treasure.Treasure;
 
 /**
  * Representa una casilla del tablero.
- *
- * Una celda conoce:
- *   - su tipo de terreno (TerrainType)
- *   - el barco que la ocupa (si hay uno)
- *   - el tesoro dinástico o flotante que contiene (si hay uno)
- *   - el jugador dueño (si es un puerto comprado)
- *   - la dirección de corriente marina (solo si es MARINE_CURRENT)
- *
- * Principio: SRP — la celda sabe sobre sí misma, no sobre reglas de juego globales.
- * Principio: PoLK (Ley de Demeter) — evitar acceder a objetos anidados desde fuera.
  */
 public class Cell {
 
@@ -44,6 +34,18 @@ public class Cell {
      */
     public boolean isNavigable() {
         return this.baseTerrain != TerrainType.ISLAND && this.occupant == null;
+    }
+
+    /**
+     * Maneja lo que no puede al iniciar el juego
+     * donde se requiere colocar barcos y puertos
+     * de forma inicial.
+     * @return true en cado de poder colocar barco/puerto
+     */
+    public boolean canPlaceStructure() {
+        return this.getTerrain() != TerrainType.ISLAND
+                && this.getTerrain() != TerrainType.PORT
+                && this.occupant == null;
     }
 
     /**

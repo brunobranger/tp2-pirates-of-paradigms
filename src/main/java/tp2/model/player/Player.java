@@ -107,7 +107,7 @@ public class Player {
                 return (Flagship) ship;
             }
         }
-        throw new IllegalStateException("Flagship not found");
+        return null;
     }
 
     /**
@@ -116,6 +116,11 @@ public class Player {
      */
     public boolean isFlagshipSunk() {
         Flagship flagship = getFlagship();
+
+        if (flagship == null) {
+            return true;
+        }
+
         return flagship.isSunk();
     }
 

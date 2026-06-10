@@ -6,6 +6,8 @@ import tp2.model.player.Player;
 
 import java.util.*;
 
+import static tp2.util.RandomUtils.nextInt;
+
 /**
  * El tablero de juego: una rejilla rectangular de {@link Cell}s.
  * Patrón: el tablero actúa como Facade para las consultas espaciales.
@@ -219,16 +221,23 @@ public class Board {
      *
      * @return lista de posiciones libres navegables
      */
-    public List<Position> getFreeNavigablePositions() {
-       List<Position> freeNavigablePositions = new ArrayList<>();
-       for (int i = 0; i < rows; i++) {
-           for (int j = 0; j < cols; j++) {
-               if (grid[i][j].isNavigable()) {
-                   freeNavigablePositions.add(new Position(i, j));
-               }
-           }
-       }
-       return freeNavigablePositions;
+    public List<Position> getPositionsMatching(boolean isInitial) {
+        List<Position> positions = new ArrayList<>();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (isInitial) {
+                    if (grid[i][j].canPlaceStructure()) {
+                        positions.add(new Position(i, j));
+                    }
+                } else {
+                    if (grid[i][j].isNavigable()) {
+                        positions.add(new Position(i, j));
+                    }
+                }
+
+            }
+        }
+        return positions;
     }
 
     /**
@@ -238,9 +247,9 @@ public class Board {
      * @return posición aleatoria libre
      */
     public Position getRandomFreePosition() {
-        List<Position> free = getFreeNavigablePositions();
+        List<Position> free = getPositionsMatching(false);
         if (free.isEmpty()) throw new IllegalArgumentException("No navigable positions available");
-        return free.get(new Random().nextInt(free.size()));
+        return free.get(nextInt(free.size()));
     }
 
     /**

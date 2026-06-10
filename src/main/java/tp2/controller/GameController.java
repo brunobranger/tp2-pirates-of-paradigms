@@ -132,8 +132,8 @@ public class GameController {
         Board board = gameState.getBoard();
 
         for (Player player : gameState.getPlayers()) {
-            Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
-            Position portPos = view.askPortPosition(player, validPositions);
+            Set<Position> validPositions = new HashSet<>(board.getPositionsMatching(true));
+            Position portPos = view.askPortPosition(player, validPositions, gameState);
             portService.placeInitialPort(board, player, portPos);
 
             for (Ship ship : player.getActiveFleet()) {
@@ -141,8 +141,8 @@ public class GameController {
                     continue;
                 }
 
-                Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
-                Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip);
+                Set<Position> validPositionsForShip = new HashSet<>(board.getPositionsMatching(true));
+                Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip, gameState);
                 portService.placeInitialShip(board, ship, shipPos);
             }
         }
@@ -201,7 +201,7 @@ public class GameController {
                 .getReachablePositions(ship.getPosition(), ship.getEffectiveMovement());
 
         view.showReachablePositions(reachable);
-        Position destination = view.askDestination(reachable);
+        Position destination = view.askDestination(reachable, gameState);
         if (destination == null) return;
 
         ShipCommand command = new MoveCommand(ship, destination, movementResolver);

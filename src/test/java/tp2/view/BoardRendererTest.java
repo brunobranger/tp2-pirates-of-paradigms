@@ -36,7 +36,7 @@ class BoardRendererTest {
         GameState state = new GameState(board, List.of(first, second));
         state.addFloatingTreasure(new FloatingTreasure(new Position(1, 1), 2));
 
-        String rendered = new BoardRenderer().render(state);
+        String rendered = new BoardRenderer().render(state, null);
 
         assertTrue(rendered.contains("B1 T  MC"));
         assertTrue(rendered.contains("TR FT"));
