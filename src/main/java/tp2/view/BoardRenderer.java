@@ -11,12 +11,8 @@ import java.util.Set;
 
 /**
  * Renderizador ASCII del tablero.
- *
  * Responsabilidad: transformar el estado actual del tablero en una
  * representacion textual para consola, sin leer input ni modificar el modelo.
- *
- * Principio: SRP - {@link ConsoleView} coordina la presentacion y esta clase
- * concentra exclusivamente el formato visual de la grilla.
  */
 public class BoardRenderer {
 

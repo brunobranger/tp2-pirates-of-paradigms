@@ -33,6 +33,16 @@ public class Cell {
      * @return true si la casilla puede ser ocupada por un barco (no es isla, no está ya ocupada).
      */
     public boolean isNavigable() {
+        return this.baseTerrain != TerrainType.ISLAND && this.occupant == null;
+    }
+
+    /**
+     * Maneja lo que no puede al iniciar el juego
+     * donde se requiere colocar barcos y puertos
+     * de forma inicial.
+     * @return true en cado de poder colocar barco/puerto
+     */
+    public boolean canPlaceStructure() {
         return this.getTerrain() != TerrainType.ISLAND
                 && this.getTerrain() != TerrainType.PORT
                 && this.occupant == null;

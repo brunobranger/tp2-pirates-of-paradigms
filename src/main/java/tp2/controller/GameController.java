@@ -132,7 +132,7 @@ public class GameController {
         Board board = gameState.getBoard();
 
         for (Player player : gameState.getPlayers()) {
-            Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
+            Set<Position> validPositions = new HashSet<>(board.getPositionsMatching(true));
             Position portPos = view.askPortPosition(player, validPositions, gameState);
             portService.placeInitialPort(board, player, portPos);
 
@@ -141,7 +141,7 @@ public class GameController {
                     continue;
                 }
 
-                Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
+                Set<Position> validPositionsForShip = new HashSet<>(board.getPositionsMatching(true));
                 Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip, gameState);
                 portService.placeInitialShip(board, ship, shipPos);
             }
