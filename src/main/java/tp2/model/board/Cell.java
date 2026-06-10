@@ -13,7 +13,7 @@ public class Cell {
     private TerrainType baseTerrain;
     private TerrainType currentTerrain;
     private int climateEffectDuration = 0;
-    private TerrainType climateOverride = null; //null si no hay un clima temporal afectando la celda
+    private TerrainType climateOverride = null;
     private Ship occupant;
     private Treasure treasure;
     private Player portOwner;
@@ -45,6 +45,7 @@ public class Cell {
     public boolean canPlaceStructure() {
         return this.getTerrain() != TerrainType.ISLAND
                 && this.getTerrain() != TerrainType.PORT
+                && this.treasure == null
                 && this.occupant == null;
     }
 
@@ -83,7 +84,7 @@ public class Cell {
     public void placeShip(Ship ship) {
         if (this.isOccupied()) throw new IllegalStateException("The cell is already occupied.");
         if (this.baseTerrain == TerrainType.ISLAND) throw new IllegalStateException("Cannot place a ship on an island terrain.");
-        occupant = ship;
+        this.occupant = ship;
         ship.setPosition(this.position);
     }
 
@@ -91,7 +92,7 @@ public class Cell {
      * Elimina el barco de la casilla (por muerte o movimiento).
      */
     public void removeShip() {
-        occupant = null;
+        this.occupant = null;
     }
 
     /**
@@ -102,7 +103,7 @@ public class Cell {
      */
     public void assignPortOwner(Player player) {
         if (baseTerrain != TerrainType.PORT) throw new IllegalStateException("The terrain is not a PORT");
-        portOwner = player;
+        this.portOwner = player;
     }
 
     /**
@@ -131,9 +132,9 @@ public class Cell {
             throw new IllegalStateException("No hay ningún tesoro en esta casilla para ser recogido.");
         }
 
-        Treasure treasure = this.treasure;
+        Treasure targetTreasure = this.treasure;
         this.treasure = null;
-        return treasure;
+        return targetTreasure;
     }
 
     /**
@@ -145,10 +146,6 @@ public class Cell {
     public void setTerrain(TerrainType newTerrain) {
         this.baseTerrain = newTerrain;
         this.currentTerrain = newTerrain;
-    }
-
-    public void changeTerrain(TerrainType newTerrain) {
-        setTerrain(newTerrain);
     }
 
     public void applyTemporalClimate(TerrainType climate, int duration) {
