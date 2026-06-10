@@ -46,10 +46,11 @@ public class ConsoleView implements GameView {
 
     /**
      * Construye una vista con streams inyectados.
-     * Util para probar interacciones sin depender de una consola real.
      */
     public ConsoleView(InputStream input, PrintStream output, PrintStream error) {
-        this(input, output, error, List.of("default.json"), List.of("balanced.json"));
+        this(input, output, error,
+                List.of("predeterminada.json", "archipielago.json", "pasillos_actuales.json", "paso_de_arrecife.json"),
+                List.of("balanced.json"));
     }
 
     /**
