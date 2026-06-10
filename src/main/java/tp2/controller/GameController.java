@@ -14,6 +14,7 @@ import tp2.model.game.system.TurnProcessor;
 import tp2.model.board.terrain.TerrainRegistry;
 import tp2.model.player.Player;
 import tp2.model.ship.Ship;
+import tp2.model.ship.ShipType;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
@@ -134,13 +135,11 @@ public class GameController {
             portService.placeInitialPort(board, player, portPos);
 
             for (Ship ship : player.getActiveFleet()) {
-                if (ship.getType().equals(FLAGSHIP)) {
-                    continue;
+                if (!ship.getType().equals(FLAGSHIP)) {
+                    Set<Position> validPositionsForShip = new HashSet<>(board.getPositionsMatching(true));
+                    Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip, gameState);
+                    portService.placeInitialShip(board, ship, shipPos);
                 }
-
-                Set<Position> validPositionsForShip = new HashSet<>(board.getPositionsMatching(true));
-                Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip, gameState);
-                portService.placeInitialShip(board, ship, shipPos);
             }
         }
     }
