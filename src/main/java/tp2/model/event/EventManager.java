@@ -40,7 +40,6 @@ public class EventManager {
                 new Squall(),
                 new Mutiny(),
                 new FloatingTreasureEvent(),
-                new Kraken(),
                 new FavorableWind(),
                 new DeckFire())
         );

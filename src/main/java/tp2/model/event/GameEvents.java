@@ -6,8 +6,6 @@ import tp2.model.ship.effect.*;
 
 import java.util.List;
 
-import static tp2.config.GameConfig.KRAKEN_DURATION_TURNS;
-
 // =============================================================================
 // VENDAVAL
 // =============================================================================
@@ -116,54 +114,6 @@ class FloatingTreasureEvent implements GameEvent {
 
     @Override
     public int getDurationInTurns() { return DISAPPEAR_AFTER_TURNS; }
-}
-
-// =============================================================================
-// KRAKEN
-// =============================================================================
-
-/**
- * Kraken: bloquea 9 casillas, ataca barcos cercanos (HP a la mitad),
- * inmoviliza temporalmente una embarcación.
- */
-class Kraken implements GameEvent {
-    @Override
-    public String getName() { return "Kraken Marino"; }
-
-    @Override
-    public String getDescription() {
-        return "¡El Kraken emerge de las profundidades! Bloquea una zona y ataca a los barcos cercanos.";
-    }
-
-    @Override
-    public EventResult apply(GameState gameState) {
-        //
-        // 1. Elegir posición aleatoria libre para el Kraken
-        // 2. Marcar la casilla del Kraken y sus 8 adyacentes como bloqueadas (KrakenBlockedCell o similar)
-        // 3. Barcos en casillas aledañas: reducir HP a la mitad
-        // 4. Inmovilizar un barco cercano con ImmobilizedEffect(1)
-        // 5. Registrar el Kraken en GameState para que persista DURATION turnos
-
-        /*
-        Position spawnPosition = gameState.getBoard().getRandomFreePosition();
-        Board board = gameState.getBoard();
-        int initRow = Math.max(0, spawnPosition.getRow() - 1);
-        int endRow = spawnPosition.getRow() + 1;
-        int initCol = Math.max(0, spawnPosition.getCol() - 1);
-        int endCol = spawnPosition.getCol() + 1;
-
-        for (int row = initRow; row <= endRow; row++) {
-            for (int col = initCol; col <= endCol; col++) {
-                //TO DO: bloquear casilllas
-            }
-        }
-         */
-
-        return new EventResult(getName(), List.of(), KRAKEN_DURATION_TURNS, List.of());
-    }
-
-    @Override
-    public int getDurationInTurns() { return KRAKEN_DURATION_TURNS; }
 }
 
 // =============================================================================
