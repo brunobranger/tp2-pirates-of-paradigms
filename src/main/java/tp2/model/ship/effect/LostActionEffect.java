@@ -17,6 +17,11 @@ public class LostActionEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new LostActionEffect(this.turnsRemaining);
+    }
+
+    @Override
     public EffectType getType() {
         return EffectType.LOST_ACTION;
     }

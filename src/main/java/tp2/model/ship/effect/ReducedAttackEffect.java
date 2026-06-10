@@ -22,6 +22,11 @@ public class ReducedAttackEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new ReducedAttackEffect(this.turnsRemaining, this.multiplier);
+    }
+
+    @Override
     public EffectType getType() {
         return EffectType.REDUCED_ATTACK;
     }

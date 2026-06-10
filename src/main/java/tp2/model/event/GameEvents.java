@@ -69,10 +69,13 @@ class Mutiny implements GameEvent {
     @Override
     public EventResult apply(GameState gameState) {
         gameState.applyEffectToCurrentPlayerFleet(new ReducedAttackEffect(DURATION, ATTACK_MULTIPLIER));
-        gameState.applyEffectToCurrentPlayerRandomShip(new LostActionEffect(1));
+        String affectedShip = gameState.applyEffectToCurrentPlayerRandomShip(new LostActionEffect(1));
         gameState.applyCostIncreaseToCurrentPlayer(COST_MULTIPLIER, DURATION);
-
-        return new EventResult(getName(), List.of(), DURATION, List.of());
+        List<String> consequences = List.of(
+                "La flota del jugador actual reduce su ataque a " + (int) (ATTACK_MULTIPLIER * 100) + "%",
+                affectedShip + " pierde la próxima acción",
+                "Los costos del jugador se multiplican por " + COST_MULTIPLIER );
+        return new EventResult(getName(), List.of(affectedShip), DURATION, consequences);
     }
 
     @Override
@@ -126,6 +129,8 @@ class FloatingTreasureEvent implements GameEvent {
 class FavorableWind implements GameEvent {
 
     private static final int DURATION = 1;
+    private static final int MOVEMENT_BONUS = 2;
+    private static final int RANGE_BONUS = 1;
 
     @Override
     public String getName() { return "Viento Favorable"; }
@@ -137,14 +142,16 @@ class FavorableWind implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        for (var player : gameState.getPlayers()) {
-            for (var ship : player.getActiveFleet()) {
-                int movementBonus = ship.isAgile() ? 2 : 0;
-                ship.addEffect(new FavorableWindEffect(DURATION, movementBonus, 1));
-            }
-        }
+        gameState.applyEffectToAllAgileShips(new FavorableWindEffect(DURATION, MOVEMENT_BONUS, RANGE_BONUS));
+        gameState.applyEffectToAllNonAgileShips(new FavorableWindEffect(DURATION, 0, RANGE_BONUS));
 
-        return new EventResult(getName(), List.of(), DURATION, List.of("Barcos ágiles reciben +2 MOV", "Todos los barcos reciben +1 RNG", "Todos pueden mover y atacar en el mismo turno"));
+        List<String> consequences = List.of(
+                "Barcos ágiles reciben +" + MOVEMENT_BONUS + " MOV",
+                "Todos los barcos reciben +" + RANGE_BONUS + " RNG",
+                "Todos pueden mover y atacar en el mismo turno"
+        );
+
+        return new EventResult(getName(), List.of("Balandras y Fragatas (Movimiento)/Todos (Rango)"), DURATION, consequences);
     }
 
     @Override

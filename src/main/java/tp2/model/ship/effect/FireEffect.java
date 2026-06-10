@@ -24,6 +24,11 @@ public class FireEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new FireEffect(this.damagePerTurn);
+    }
+
+    @Override
     public EffectType getType() {
         return EffectType.FIRE;
     }

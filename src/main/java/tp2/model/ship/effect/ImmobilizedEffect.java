@@ -18,6 +18,11 @@ public class ImmobilizedEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new ImmobilizedEffect(this.turnsRemaining);
+    }
+
+    @Override
     public EffectType getType() { return EffectType.IMMOBILIZED; }
 
     @Override

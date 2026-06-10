@@ -18,6 +18,11 @@ public class ReducedMovementEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new ReducedMovementEffect(this.turnsRemaining);
+    }
+
+    @Override
     public EffectType getType() { return EffectType.REDUCED_MOVEMENT; }
 
     @Override
