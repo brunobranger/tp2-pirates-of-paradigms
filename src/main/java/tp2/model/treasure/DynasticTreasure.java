@@ -68,7 +68,7 @@ public class DynasticTreasure implements Treasure{
      */
     public void pickUp(Ship ship) {
         setCarrierTreasure(ship);
-        updatePositionWithCarrier(null);
+        setPositionCarrierTreasure(ship.getPosition());
         setFloating(false);
     }
 
@@ -113,7 +113,10 @@ public class DynasticTreasure implements Treasure{
      * @param newPosition nueva posición del barco
      */
     public void updatePositionWithCarrier(Position newPosition) {
-        setPositionCarrierTreasure(newPosition);
+        if (this.carrierTreasure == null) {
+            throw new IllegalStateException("No se puede actualizar la posición del portador porque no hay ningún barco llevando el tesoro.");
+        }
+        this.positionCarrierTreasure = newPosition;
     }
 
     // -------------------------------------------------------------------------
@@ -141,14 +144,9 @@ public class DynasticTreasure implements Treasure{
      * @param positionCarrierTreasure es null si esta en el barco, sino Position.
      */
     private void setPositionCarrierTreasure(Position positionCarrierTreasure) {
-        if (this.carrierTreasure != null && positionCarrierTreasure != null) {
-            throw new IllegalStateException("No se puede establecer una posicion si el tesoro esta sobre un barco.");
-        }
-
         if (this.carrierTreasure == null && positionCarrierTreasure == null) {
-            throw new IllegalStateException("La posicion en el mapa no puede ser nula si ningun barco lo esta transportando.");
+            throw new IllegalStateException("La posición en el mapa no puede ser nula si ningún barco lo está transportando.");
         }
-
         this.positionCarrierTreasure = positionCarrierTreasure;
     }
 
@@ -157,10 +155,9 @@ public class DynasticTreasure implements Treasure{
      * @param isFloating true si el tesoro flota, sino false.
      */
     private void setFloating(boolean isFloating) {
-        if (isFloating() && this.carrierTreasure != null) {
-            throw new IllegalStateException("El barco no fue hundido, para cambiarle el estado.");
+        if (isFloating && this.carrierTreasure != null) {
+            throw new IllegalStateException("No puede quedar flotando si todavía está siendo transportado por un barco.");
         }
-
         this.isFloating = isFloating;
     }
 }
