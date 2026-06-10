@@ -1,6 +1,7 @@
 package tp2.controller.command;
 
 import tp2.config.GameConfig;
+import tp2.model.board.Cell;
 import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.board.Position;
@@ -8,6 +9,7 @@ import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
 import tp2.model.ship.effect.ReducedAttackEffect;
 import tp2.model.ship.effect.ReducedMovementEffect;
+import tp2.model.treasure.Treasure;
 
 public class MoveCommand implements ShipCommand {
 
@@ -35,10 +37,10 @@ public class MoveCommand implements ShipCommand {
         ship.registerMove();
 
         var player = gameState.getCurrentPlayer();
-        var cell = gameState.getBoard().getCellAt(destination);
+        Cell cell = gameState.getBoard().getCellAt(destination);
 
         if (cell.getTreasure() != null) {
-            var treasure = cell.pickUpTreasure();
+            Treasure treasure = cell.pickUpTreasure();
             treasure.onPickUp(ship, player);
         }
 

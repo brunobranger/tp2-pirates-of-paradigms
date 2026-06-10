@@ -7,6 +7,8 @@ import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.player.Player;
 
+import java.util.Set;
+
 /**
  * Renderizador ASCII del tablero.
  *
@@ -18,13 +20,17 @@ import tp2.model.player.Player;
  */
 public class BoardRenderer {
 
+    public String render(GameState gameState) {
+        return this.render(gameState, null);
+    }
+
     /**
      * Genera la grilla completa con coordenadas y leyenda.
      *
      * @param gameState estado actual de la partida
      * @return representacion multilínea lista para imprimir
      */
-    public String render(GameState gameState) {
+    public String render(GameState gameState, Set<Position> validPositions) {
         Board board = gameState.getBoard();
         StringBuilder result = new StringBuilder();
 
@@ -37,8 +43,16 @@ public class BoardRenderer {
         for (int row = 0; row < board.getRows(); row++) {
             result.append(String.format("%-3d ", row));
             for (int col = 0; col < board.getCols(); col++) {
-                Cell cell = board.getCellAt(new Position(row, col));
-                result.append(String.format("%-3s", getCellSymbol(cell, gameState)));
+                Position currentPos = new Position(row, col);
+                Cell cell = board.getCellAt(currentPos);
+                String symbol = getCellSymbol(cell, gameState);
+
+                if (validPositions != null && validPositions.contains(currentPos)) {
+                    if (symbol.equals("~~")) {
+                        symbol = " • ";
+                    }
+                }
+                result.append(String.format("%-3s", symbol));
             }
             result.append(System.lineSeparator());
         }

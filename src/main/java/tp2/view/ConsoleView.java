@@ -12,11 +12,7 @@ import tp2.model.treasure.DynasticTreasure;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.lang.Integer.parseInt;
@@ -42,6 +38,8 @@ public class ConsoleView implements GameView {
     private final BoardRenderer boardRenderer;
     private final List<String> availableMaps;
     private final List<String> availableFleets;
+
+    private GameState gameState;
 
     /** Construye la vista interactiva con la entrada y salida estandar. */
     public ConsoleView() {
@@ -85,6 +83,13 @@ public class ConsoleView implements GameView {
         this.boardRenderer = boardRenderer;
         this.availableMaps = List.copyOf(availableMaps);
         this.availableFleets = List.copyOf(availableFleets);
+    }
+
+    /**
+     * Vincula el estado del juego con la vista para permitir renderizados contextuales.
+     */
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 
     @Override
@@ -166,6 +171,7 @@ public class ConsoleView implements GameView {
 
     @Override
     public void showBoard(GameState gameState) {
+        //Set<Position> validPositions = new HashSet<>(gameState.getBoard().getFreeNavigablePositions());
         out.print(boardRenderer.render(gameState));
     }
 
@@ -294,14 +300,30 @@ public class ConsoleView implements GameView {
      */
     private Position askPosition(String prompt, Set<Position> validPositions, boolean cancellable) {
         out.println(prompt);
-        out.println("Posiciones validas: " + sortedPositions(validPositions));
+        if (this.gameState != null) {
+            out.println("Las zonas permitidas están marcadas con '•' en el mapa:");
+            out.println();
+            out.println(boardRenderer.render(this.gameState, validPositions));
+        }
+
         while (true) {
+            out.println("Ingrese coordenadas como fila,columna: ");
             out.print("> ");
             String input = readLine().trim();
             if (cancellable && isCancel(input)) {
                 return null;
             }
             Position position = parsePosition(input);
+            if (position != null && this.gameState != null) {
+                var tableroDebug = this.gameState.getBoard();
+                var celdaDebug = tableroDebug.getCellAt(position);
+                out.println("\n--- [🔍 DEBUGGING EN VIVO] ---");
+                out.println("• Tipeaste la posición: " + position.getRow() + "," + position.getCol());
+                out.println("• Terreno en el MODELO: " + celdaDebug.getTerrain());
+                out.println("• ¿isNavigable() dice?: " + celdaDebug.isNavigable());
+                out.println("------------------------------\n");
+            }
+
             if (position != null && validPositions.contains(position)) {
                 return position;
             }
