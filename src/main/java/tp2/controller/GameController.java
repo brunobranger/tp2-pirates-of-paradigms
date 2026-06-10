@@ -115,19 +115,8 @@ public class GameController {
         Board board = gameState.getBoard();
 
         for (Player player : gameState.getPlayers()) {
-            Position portPos = null;
-
-            while(portPos == null) {
-                Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
-                portPos = view.askPortPosition(player, validPositions);
-
-                if (portPos != null) {
-                    if (!board.getCellAt(portPos).isNavigable()) {
-                        view.showError("¡Coordenada inválida! No puede ubicar el puerto sobre una isla u otro puerto.");
-                        portPos = null;
-                    }
-                }
-            }
+            Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
+            Position portPos = view.askPortPosition(player, validPositions);
 
             Cell portCell = board.getCellAt(portPos);
             portCell.changeTerrain(PORT);
@@ -141,18 +130,8 @@ public class GameController {
                     continue;
                 }
 
-                Position shipPos = null;
-                while (shipPos == null) {
-                    Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
-                    shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip);
-
-                    if (shipPos != null) {
-                        if (!board.getCellAt(shipPos).isNavigable()) {
-                            view.showError("¡Posición inválida! No puede colocar barcos sobre islas, puertos o casillas ocupadas.");
-                            shipPos = null;
-                        }
-                    }
-                }
+                Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
+                Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip);
 
                 Cell targetCell = board.getCellAt(shipPos);
                 targetCell.placeShip(ship);
