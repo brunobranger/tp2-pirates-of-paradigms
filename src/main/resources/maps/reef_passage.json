@@ -1,0 +1,154 @@
+{
+  "rows": 10,
+  "cols": 10,
+  "cells": [
+    {
+      "row": 0,
+      "col": 4,
+      "terrain": "PORT"
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "terrain": "PORT"
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "terrain": "REEF"
+    },
+    {
+      "row": 1,
+      "col": 6,
+      "terrain": "REEF"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "terrain": "FOG"
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "terrain": "REEF"
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "terrain": "REEF"
+    },
+    {
+      "row": 2,
+      "col": 8,
+      "terrain": "FOG"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH"
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH"
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH"
+    },
+    {
+      "row": 4,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH"
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH"
+    },
+    {
+      "row": 5,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH"
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH"
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 6,
+      "col": 5,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 6,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH"
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "terrain": "FOG"
+    },
+    {
+      "row": 7,
+      "col": 4,
+      "terrain": "REEF"
+    },
+    {
+      "row": 7,
+      "col": 5,
+      "terrain": "REEF"
+    },
+    {
+      "row": 7,
+      "col": 8,
+      "terrain": "FOG"
+    },
+    {
+      "row": 8,
+      "col": 3,
+      "terrain": "REEF"
+    },
+    {
+      "row": 8,
+      "col": 6,
+      "terrain": "REEF"
+    },
+    {
+      "row": 9,
+      "col": 4,
+      "terrain": "PORT"
+    },
+    {
+      "row": 9,
+      "col": 5,
+      "terrain": "PORT"
+    }
+  ]
+}

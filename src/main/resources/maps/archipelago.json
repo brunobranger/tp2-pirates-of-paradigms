@@ -1,0 +1,130 @@
+{
+  "rows": 10,
+  "cols": 10,
+  "cells": [
+    {
+      "row": 0,
+      "col": 1,
+      "terrain": "PORT"
+    },
+    {
+      "row": 0,
+      "col": 8,
+      "terrain": "PORT"
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "terrain": "FOG"
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "terrain": "FOG"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "terrain": "REEF"
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH_EAST"
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "terrain": "MARINE_CURRENT",
+      "direction": "SOUTH_WEST"
+    },
+    {
+      "row": 4,
+      "col": 8,
+      "terrain": "REEF"
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "terrain": "REEF"
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH_EAST"
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "terrain": "MARINE_CURRENT",
+      "direction": "NORTH_WEST"
+    },
+    {
+      "row": 5,
+      "col": 8,
+      "terrain": "REEF"
+    },
+    {
+      "row": 6,
+      "col": 3,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 6,
+      "col": 6,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 7,
+      "col": 7,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 8,
+      "col": 4,
+      "terrain": "STORM"
+    },
+    {
+      "row": 8,
+      "col": 5,
+      "terrain": "STORM"
+    },
+    {
+      "row": 9,
+      "col": 1,
+      "terrain": "PORT"
+    },
+    {
+      "row": 9,
+      "col": 8,
+      "terrain": "PORT"
+    }
+  ]
+}
