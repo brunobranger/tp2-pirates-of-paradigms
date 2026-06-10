@@ -33,10 +33,10 @@ public interface GameView {
     String askFleetFile();
 
     /** Pide a un jugador dónde colocar su puerto inicial. */
-    Position askPortPosition(Player player, Set<Position> validPositions);
+    Position askPortPosition(Player player, Set<Position> validPositions, GameState gameState);
 
     /** Pide a un jugador dónde colocar un barco al inicio de la partida. */
-    Position askShipPlacementPosition(Player player, Ship ship, Set<Position> validPositions);
+    Position askShipPlacementPosition(Player player, Ship ship, Set<Position> validPositions, GameState gameState);
 
     // -------------------------------------------------------------------------
     // Menú principal y acciones
@@ -71,7 +71,7 @@ public interface GameView {
      * @param reachable conjunto de posiciones válidas
      * @return posición elegida, o null si cancela
      */
-    Position askDestination(Set<Position> reachable);
+    Position askDestination(Set<Position> reachable, GameState gameState);
 
     /**
      * Muestra los barcos enemigos en rango y pide elegir un objetivo.
@@ -131,4 +131,5 @@ public interface GameView {
     void showFirstPlayer(Player player);
     void showNoTargets();
     void showInvalidOption();
+    void showCellInvalid();
 }

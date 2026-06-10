@@ -39,8 +39,6 @@ public class ConsoleView implements GameView {
     private final List<String> availableMaps;
     private final List<String> availableFleets;
 
-    private GameState gameState;
-
     /** Construye la vista interactiva con la entrada y salida estandar. */
     public ConsoleView() {
         this(System.in, System.out, System.err);
@@ -85,13 +83,6 @@ public class ConsoleView implements GameView {
         this.availableFleets = List.copyOf(availableFleets);
     }
 
-    /**
-     * Vincula el estado del juego con la vista para permitir renderizados contextuales.
-     */
-    public void setGameState(GameState gameState) {
-        this.gameState = gameState;
-    }
-
     @Override
     public String askMapFile() {
         return askFile("mapa", availableMaps);
@@ -103,13 +94,13 @@ public class ConsoleView implements GameView {
     }
 
     @Override
-    public Position askPortPosition(Player player, Set<Position> validPositions) {
-        return askPosition("Ubique el puerto inicial de " + player + ".", validPositions, false);
+    public Position askPortPosition(Player player, Set<Position> validPositions, GameState gameState) {
+        return askPosition("Ubique el puerto inicial de " + player + ".", validPositions, false, gameState);
     }
 
     @Override
-    public Position askShipPlacementPosition(Player player, Ship ship, Set<Position> validPositions) {
-        return askPosition("Ubique " + ship.getName() + " de " + player + ".", validPositions, false);
+    public Position askShipPlacementPosition(Player player, Ship ship, Set<Position> validPositions, GameState gameState) {
+        return askPosition("Ubique " + ship.getName() + " de " + player + ".", validPositions, false, gameState);
     }
 
     // -------------------------------------------------------------------------
@@ -135,7 +126,7 @@ public class ConsoleView implements GameView {
     @Override
     public Ship askSelectShip(Player player) {
         return askListItem("Seleccione un barco propio:", player.getActiveFleet(),
-                ship -> describeShip(ship), true);
+                this::describeShip, true);
     }
 
     @Override
@@ -155,9 +146,9 @@ public class ConsoleView implements GameView {
     }
 
     @Override
-    public Position askDestination(Set<Position> reachable) {
+    public Position askDestination(Set<Position> reachable, GameState gameState) {
         return askPosition("Ingrese destino como fila,columna (" + CANCEL_HINT + "):",
-                reachable, true);
+                reachable, true, gameState);
     }
 
     @Override
@@ -171,7 +162,6 @@ public class ConsoleView implements GameView {
 
     @Override
     public void showBoard(GameState gameState) {
-        //Set<Position> validPositions = new HashSet<>(gameState.getBoard().getFreeNavigablePositions());
         out.print(boardRenderer.render(gameState));
     }
 
@@ -283,6 +273,11 @@ public class ConsoleView implements GameView {
     }
 
     @Override
+    public void showCellInvalid() {
+        showError("Elija otra posición para colocar el barco o puerto!");
+    }
+
+    @Override
     public void showInitShipPlace() {
         showMessage("");
         showMessage("--- FASE DE DESPLIEGUE INICIAL DE FLOTAS ---");
@@ -298,12 +293,12 @@ public class ConsoleView implements GameView {
      * Solicita coordenadas y repite el pedido hasta recibir una posicion valida
      * o una cancelacion, si el flujo permite volver al menu anterior.
      */
-    private Position askPosition(String prompt, Set<Position> validPositions, boolean cancellable) {
+    private Position askPosition(String prompt, Set<Position> validPositions, boolean cancellable, GameState gameState) {
         out.println(prompt);
-        if (this.gameState != null) {
+        if (gameState != null) {
             out.println("Las zonas permitidas están marcadas con '•' en el mapa:");
             out.println();
-            out.println(boardRenderer.render(this.gameState, validPositions));
+            out.println(boardRenderer.render(gameState, validPositions));
         }
 
         while (true) {
@@ -317,7 +312,7 @@ public class ConsoleView implements GameView {
             if (position != null && validPositions.contains(position)) {
                 return position;
             }
-            showInvalidOption();
+            showCellInvalid();
         }
     }
 
