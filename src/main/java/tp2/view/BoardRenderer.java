@@ -63,18 +63,33 @@ public class BoardRenderer {
 
     /**
      * Obtiene el simbolo visible de una celda.
-     * La prioridad visual es: barco, tesoro y finalmente terreno.
+     * La prioridad visual es: barco, puerto, tesoro y terreno.
      */
     private String getCellSymbol(Cell cell, GameState gameState) {
         if (cell.isOccupied()) {
             return getShipSymbol(cell, gameState);
         }
+
+        if (cell.getTerrain() == TerrainType.PORT) {
+            Player ownerPort = cell.getPortOwner();
+
+            if (ownerPort == null) {
+                return "P";
+            }
+
+            int playerIndex = gameState.getPlayers().indexOf(ownerPort);
+            if (playerIndex != -1) {
+                return "P" + (playerIndex + 1);
+            }
+        }
         if (hasDynasticTreasure(cell.getPosition(), gameState)) {
             return "TR";
         }
+
         if (hasFloatingTreasure(cell.getPosition(), gameState)) {
             return "FT";
         }
+
         return getTerrainSymbol(cell.getTerrain());
     }
 
