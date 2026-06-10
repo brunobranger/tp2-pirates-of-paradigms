@@ -314,16 +314,6 @@ public class ConsoleView implements GameView {
                 return null;
             }
             Position position = parsePosition(input);
-            if (position != null && this.gameState != null) {
-                var tableroDebug = this.gameState.getBoard();
-                var celdaDebug = tableroDebug.getCellAt(position);
-                out.println("\n--- [🔍 DEBUGGING EN VIVO] ---");
-                out.println("• Tipeaste la posición: " + position.getRow() + "," + position.getCol());
-                out.println("• Terreno en el MODELO: " + celdaDebug.getTerrain());
-                out.println("• ¿isNavigable() dice?: " + celdaDebug.isNavigable());
-                out.println("------------------------------\n");
-            }
-
             if (position != null && validPositions.contains(position)) {
                 return position;
             }
