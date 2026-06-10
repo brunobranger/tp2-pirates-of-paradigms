@@ -31,7 +31,7 @@ public class CombatSystem {
         boolean defenderSunk = false;
         if (!attacker.canAttack())
             throw new RuntimeException("El barco elegido no puede atacar");
-        if (isInRange(attacker, defender))
+        if (!isInRange(attacker, defender))
             throw new RuntimeException("El barco a atacar está fuera de rango");
 
         int effectiveDamage = defender.receiveDamage(attacker.getEffectiveAttack());

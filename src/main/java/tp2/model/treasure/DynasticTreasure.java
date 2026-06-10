@@ -53,7 +53,8 @@ public class DynasticTreasure implements Treasure{
         if (getCarrierTreasure() == null) {
             return false;
         }
-        return this.owner.hasShip(getCarrierTreasure());
+
+        return !this.owner.hasShip(getCarrierTreasure());
     }
 
     // -------------------------------------------------------------------------

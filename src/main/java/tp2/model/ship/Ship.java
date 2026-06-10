@@ -154,13 +154,21 @@ public abstract class Ship {
         if (isSunk()) {
             return false;
         }
-        if (hasMovedThisTurn || hasAttackedThisTurn) {
+
+        if (hasMovedThisTurn) {
             return false;
         }
-        return activeEffects.stream()
-                .noneMatch(ShipEffect::preventsMovement);
-    }
 
+        if (hasAttackedThisTurn) {
+            boolean canMoveAfterAttack = activeEffects.stream().anyMatch(ShipEffect::allowsMoveAfterAttack);
+
+            if (!canMoveAfterAttack) {
+                return false;
+            }
+        }
+
+        return activeEffects.stream().noneMatch(ShipEffect::preventsMovement);
+    }
     /**
      * @return true si el barco puede atacar (no atacó ya y no está incendiado)
      */
@@ -168,11 +176,12 @@ public abstract class Ship {
         if (isSunk()) {
             return false;
         }
+
         if (hasAttackedThisTurn) {
             return false;
         }
-        return activeEffects.stream()
-                .noneMatch(ShipEffect::preventsAttack);
+
+        return activeEffects.stream().noneMatch(ShipEffect::preventsAttack);
     }
 
     /**
@@ -183,9 +192,6 @@ public abstract class Ship {
         hasMovedThisTurn = false;
         hasAttackedThisTurn = false;
 
-        for (ShipEffect effect : activeEffects) {
-            effect.applyEndOfTurnDamage(this);
-        }
         activeEffects.forEach(ShipEffect::tick);
         activeEffects.removeIf(ShipEffect::isExpired);
     }

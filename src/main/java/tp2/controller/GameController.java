@@ -60,12 +60,14 @@ public class GameController {
      */
     public void start() {
         decideFirstPlayer();
+        executeInitialDeployment();
+
         while (!gameState.isGameOver()) {
             playTurn();
         }
+
         view.showVictory(gameState.getPlayerWinner(), gameState.getVictoryCondition());
     }
-
     /**
      * Sorteo inicial: decide al azar quién comienza.
      */
@@ -84,8 +86,6 @@ public class GameController {
     private void playTurn() {
         view.showBoard(gameState);
         view.showTurnSummary(gameState);
-
-        executeInitialDeployment();
 
         boolean turnEnded = false;
         while (!turnEnded) {
@@ -147,7 +147,7 @@ public class GameController {
         return switch (option) {
             case 1 -> { showGameStatus(); yield false; }
             case 2 -> { handleShipAction(); yield false; }
-            case 3 -> { handleFinishedTurn(); yield false; }
+            case 3 -> true;
             case 4 -> { handleSurrender(); yield true; }
             default -> { view.showInvalidOption(); yield false; }
         };

@@ -50,11 +50,6 @@ public class FavorableWindEffect implements ShipEffect {
         return true;
     }
 
-    @Override
-    public boolean allowsAttackAfterMove() {
-        return true;
-    }
-
     public int getTurnsRemaining() {
         return turnsRemaining;
     }

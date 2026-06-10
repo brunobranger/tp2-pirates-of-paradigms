@@ -187,7 +187,14 @@ class FavorableWind implements GameEvent {
 
     @Override
     public EventResult apply(GameState gameState) {
-        return new EventResult(getName(), List.of(), DURATION, List.of());
+        for (var player : gameState.getPlayers()) {
+            for (var ship : player.getActiveFleet()) {
+                int movementBonus = ship.isAgile() ? 2 : 0;
+                ship.addEffect(new FavorableWindEffect(DURATION, movementBonus, 1));
+            }
+        }
+
+        return new EventResult(getName(), List.of(), DURATION, List.of("Barcos ágiles reciben +2 MOV", "Todos los barcos reciben +1 RNG", "Todos pueden mover y atacar en el mismo turno"));
     }
 
     @Override
