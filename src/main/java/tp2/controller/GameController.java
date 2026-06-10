@@ -1,9 +1,13 @@
 package tp2.controller;
 
+import tp2.config.GameConfig;
 import tp2.controller.command.*;
 import tp2.model.board.Board;
+import tp2.model.board.Cell;
 import tp2.model.game.GameState;
 import tp2.model.board.Position;
+import tp2.model.board.TerrainType;
+import tp2.model.combat.AttackResult;
 import tp2.model.combat.CombatSystem;
 import tp2.model.event.EventManager;
 import tp2.model.event.GameEvent;
@@ -13,13 +17,22 @@ import tp2.model.game.system.PortService;
 import tp2.model.game.system.TurnProcessor;
 import tp2.model.board.terrain.TerrainRegistry;
 import tp2.model.player.Player;
+import tp2.model.resource.ResourceCosts;
+import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
-import tp2.model.ship.ShipType;
+import tp2.model.ship.effect.FireEffect;
+import tp2.model.ship.effect.ShipEffect;
+import tp2.model.treasure.DynasticTreasure;
+import tp2.model.treasure.FloatingTreasure;
+import tp2.model.treasure.Treasure;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static tp2.model.ship.ShipType.FLAGSHIP;
@@ -116,7 +129,9 @@ public class GameController {
             return;
         }
 
+        List<EndTurnShipSnapshot> endTurnSnapshots = snapshotCurrentPlayerShipsForEndTurn();
         turnProcessor.processEndOfTurn(gameState);
+        showEndTurnFeedback(endTurnSnapshots);
         checkAndApplyEvent();
         gameState.checkVictoryConditions();
         gameState.switchTurn();
@@ -158,7 +173,7 @@ public class GameController {
             case 1 -> { showGameStatus(); yield false; }
             case 2 -> { handleShipAction(); yield false; }
             case 3 -> true;
-            case 4 -> { handleSurrender(); yield true; }
+            case 4 -> handleSurrender();
             default -> { view.showInvalidOption(); yield false; }
         };
     }
@@ -193,6 +208,11 @@ public class GameController {
      * Muestra las posiciones alcanzables y pide destino al jugador.
      */
     private void handleMove(Ship ship) {
+        if (!ship.canMove()) {
+            view.showActionUnavailable(ship, ShipAction.MOVE, describeMoveBlocker(ship));
+            return;
+        }
+
         Set<Position> reachable = gameState.getBoard()
                 .getReachablePositions(ship.getPosition(), ship.getEffectiveMovement());
 
@@ -201,7 +221,14 @@ public class GameController {
         if (destination == null) return;
 
         ShipCommand command = new MoveCommand(ship, destination, movementResolver);
-        executeCommand(command);
+        if (!command.canExecute(gameState)) {
+            view.showActionUnavailable(ship, ShipAction.MOVE, "el destino no está dentro de su alcance");
+            return;
+        }
+
+        MoveSnapshot before = snapshotMove(ship, destination);
+        command.execute(gameState);
+        showMoveFeedback(before);
     }
 
     /**
@@ -209,6 +236,11 @@ public class GameController {
      * Muestra los objetivos en rango y pide al jugador elegir uno.
      */
     private void handleAttack(Ship ship) {
+        if (!ship.canAttack()) {
+            view.showActionUnavailable(ship, ShipAction.ATTACK, describeAttackBlocker(ship));
+            return;
+        }
+
         var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
         List<Ship> targets = gameState.getBoard()
                 .getTargetsInRange(ship, ship.getEffectiveRange(), opponent);
@@ -221,8 +253,19 @@ public class GameController {
         Ship target = view.askTarget(targets);
         if (target == null) return;
 
-        ShipCommand command = new AttackCommand(ship, target, combatSystem);
-        executeCommand(command);
+        AttackCommand command = new AttackCommand(ship, target, combatSystem);
+        if (!command.canExecute(gameState)) {
+            view.showActionUnavailable(ship, ShipAction.ATTACK, "el objetivo está fuera de rango");
+            return;
+        }
+
+        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        command.execute(gameState);
+        view.showAttackResult(command.getLastResult());
+        if (command.getLastResult().isDefenderSunk()) {
+            int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+            view.showShipSunkReward(target, goldAfter - goldBefore, goldAfter);
+        }
     }
 
     /**
@@ -230,7 +273,17 @@ public class GameController {
      */
     private void handleRepair(Ship ship) {
         ShipCommand command = new RepairCommand(ship, portService);
-        executeCommand(command);
+        if (!command.canExecute(gameState)) {
+            view.showActionUnavailable(ship, ShipAction.REPAIR, describeRepairBlocker(ship));
+            return;
+        }
+
+        boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
+        int hpBefore = ship.getCurrentHp();
+        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        command.execute(gameState);
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        view.showRepairResult(ship, ship.getCurrentHp() - hpBefore, inOwnPort, woodSpent);
     }
 
     /**
@@ -238,7 +291,15 @@ public class GameController {
      */
     private void handleBuyPort(Ship ship) {
         ShipCommand command = new BuyPortCommand(ship, portService);
-        executeCommand(command);
+        if (!command.canExecute(gameState)) {
+            view.showActionUnavailable(ship, ShipAction.BUY_PORT, describeBuyPortBlocker(ship));
+            return;
+        }
+
+        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        command.execute(gameState);
+        int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+        view.showPortPurchased(ship, goldBefore - goldAfter, goldAfter);
     }
 
     /**
@@ -246,25 +307,177 @@ public class GameController {
      */
     private void handleExtinguishFire(Ship ship) {
         ShipCommand command = new ExtinguishFireCommand(ship, portService);
-        executeCommand(command);
+        if (!command.canExecute(gameState)) {
+            view.showActionUnavailable(ship, ShipAction.EXTINGUISH_FIRE, describeExtinguishBlocker(ship));
+            return;
+        }
+
+        boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
+        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        command.execute(gameState);
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        view.showFireExtinguished(ship, inOwnPort, woodSpent);
     }
 
     // -------------------------------------------------------------------------
-    // Ejecución de comandos
+    // Feedback de acciones
     // -------------------------------------------------------------------------
 
-    /**
-     * Verifica canExecute y ejecuta el comando.
-     * Si no puede ejecutarse, muestra error y vuelve al menú (no termina el turno).
-     * Principio Tell Don't Ask: el comando sabe si puede ejecutarse,
-     * el controller no inspecciona el estado para decidirlo.
-     */
-    private void executeCommand(ShipCommand command) {
-        if (!command.canExecute(gameState)) {
-            view.showError("Acción no válida en este momento.");
-            return;
+    private MoveSnapshot snapshotMove(Ship ship, Position destination) {
+        Cell destinationCell = gameState.getBoard().getCellAt(destination);
+        return new MoveSnapshot(
+                ship,
+                ship.getPosition(),
+                destination,
+                destinationCell.getTerrain(),
+                destinationCell.getTreasure(),
+                ship.getCurrentHp(),
+                gameState.getCurrentPlayer().getResources().getGold()
+        );
+    }
+
+    private void showMoveFeedback(MoveSnapshot before) {
+        Ship ship = before.ship();
+        view.showMoveResult(ship, before.origin(), before.destination());
+
+        if (before.destinationTreasure() instanceof DynasticTreasure treasure) {
+            view.showDynasticTreasureCollected(ship, treasure.getOwner());
+        } else if (before.destinationTreasure() instanceof FloatingTreasure) {
+            int goldGained = gameState.getCurrentPlayer().getResources().getGold() - before.goldBefore();
+            view.showFloatingTreasureCollected(ship, goldGained, calculateFloatingTreasureRepair(before));
         }
-        command.execute(gameState);
+
+        if (before.destinationTerrain() == TerrainType.REEF) {
+            view.showReefDamage(ship, calculateReefDamage(before));
+        } else if (before.destinationTerrain() == TerrainType.FOG) {
+            view.showFogEntered(ship);
+        } else if (before.destinationTerrain() == TerrainType.STORM) {
+            view.showStormEntered(ship);
+        }
+
+        if (before.destinationTerrain() == TerrainType.MARINE_CURRENT
+                && !ship.getPosition().equals(before.destination())) {
+            view.showMarineCurrentPush(ship, ship.getPosition());
+        }
+    }
+
+    private int calculateFloatingTreasureRepair(MoveSnapshot before) {
+        return Math.min(ResourceCosts.FLOATING_TREASURE_HP_REPAIR,
+                before.ship().getMaxHp() - before.hpBefore());
+    }
+
+    private int calculateReefDamage(MoveSnapshot before) {
+        int hpBeforeReef = before.hpBefore() + (before.destinationTreasure() instanceof FloatingTreasure
+                ? calculateFloatingTreasureRepair(before)
+                : 0);
+        int effectiveDamage = Math.max(0, GameConfig.REEF_DAMAGE - before.ship().getDef());
+        return Math.min(hpBeforeReef, effectiveDamage);
+    }
+
+    private List<EndTurnShipSnapshot> snapshotCurrentPlayerShipsForEndTurn() {
+        List<EndTurnShipSnapshot> snapshots = new ArrayList<>();
+        for (Ship ship : gameState.getCurrentPlayer().getActiveFleet()) {
+            snapshots.add(new EndTurnShipSnapshot(
+                    ship,
+                    ship.getCurrentHp(),
+                    portService.isShipInCurrentPlayerPort(gameState, ship),
+                    calculateFireDamage(ship),
+                    countEffects(ship.getActiveEffects())
+            ));
+        }
+        return snapshots;
+    }
+
+    private void showEndTurnFeedback(List<EndTurnShipSnapshot> snapshots) {
+        for (EndTurnShipSnapshot before : snapshots) {
+            Ship ship = before.ship();
+            int hpAfterFire = Math.max(0, before.hpBefore() - before.fireDamage());
+            if (before.fireDamage() > 0) {
+                view.showEndTurnFireDamage(ship, before.fireDamage(), hpAfterFire);
+            }
+
+            int hpRecovered = ship.getCurrentHp() - hpAfterFire;
+            if (before.inOwnPort() && hpRecovered > 0) {
+                view.showEndTurnPortRepair(ship, hpRecovered);
+            }
+
+            Map<EffectType, Integer> effectsAfter = countEffects(ship.getActiveEffects());
+            for (var entry : before.effectsBefore().entrySet()) {
+                int expired = entry.getValue() - effectsAfter.getOrDefault(entry.getKey(), 0);
+                for (int index = 0; index < expired; index++) {
+                    view.showEffectExpired(ship, entry.getKey());
+                }
+            }
+        }
+    }
+
+    private int calculateFireDamage(Ship ship) {
+        int hpRemaining = ship.getCurrentHp();
+        for (ShipEffect effect : ship.getActiveEffects()) {
+            if (effect instanceof FireEffect fireEffect) {
+                int damage = Math.max(0, fireEffect.getDamagePerTurn() - ship.getDef());
+                hpRemaining = Math.max(0, hpRemaining - damage);
+            }
+        }
+        return ship.getCurrentHp() - hpRemaining;
+    }
+
+    private Map<EffectType, Integer> countEffects(List<ShipEffect> effects) {
+        Map<EffectType, Integer> counts = new EnumMap<>(EffectType.class);
+        for (ShipEffect effect : effects) {
+            counts.merge(effect.getType(), 1, Integer::sum);
+        }
+        return counts;
+    }
+
+    private String describeMoveBlocker(Ship ship) {
+        if (ship.isSunk()) return "está hundido";
+        if (ship.hasMovedThisTurn()) return "ya se movió en este turno";
+        if (ship.hasAttackedThisTurn() && !canMoveAfterAttack(ship)) {
+            return "ya atacó en este turno";
+        }
+        return "tiene un efecto activo que le impide moverse";
+    }
+
+    private String describeAttackBlocker(Ship ship) {
+        if (ship.isSunk()) return "está hundido";
+        if (ship.hasAttackedThisTurn()) return "ya atacó en este turno";
+        if (ship.isOnFire()) return "tiene un incendio activo";
+        return "tiene un efecto activo que le impide atacar";
+    }
+
+    private String describeRepairBlocker(Ship ship) {
+        if (ship.isSunk()) return "está hundido";
+        if (!portService.isShipInCurrentPlayerPort(gameState, ship)
+                && !gameState.getCurrentPlayer().getResources()
+                        .hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
+            return "no está en un puerto propio y no tiene madera suficiente";
+        }
+        return "no cumple las condiciones para repararse";
+    }
+
+    private String describeBuyPortBlocker(Ship ship) {
+        if (!portService.isUnownedPortAtShipPosition(gameState, ship)) {
+            return "no está sobre un puerto neutral";
+        }
+        if (!gameState.getCurrentPlayer().getResources().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
+            return "no tiene oro suficiente";
+        }
+        return "no cumple las condiciones para comprar puerto";
+    }
+
+    private String describeExtinguishBlocker(Ship ship) {
+        if (!ship.isOnFire()) return "no tiene incendio activo";
+        if (!portService.isShipInCurrentPlayerPort(gameState, ship)
+                && !gameState.getCurrentPlayer().getResources()
+                        .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
+            return "no está en un puerto propio y no tiene madera suficiente";
+        }
+        return "no cumple las condiciones para apagar el incendio";
+    }
+
+    private boolean canMoveAfterAttack(Ship ship) {
+        return ship.getActiveEffects().stream().anyMatch(ShipEffect::allowsMoveAfterAttack);
     }
 
     /**
@@ -287,8 +500,32 @@ public class GameController {
         view.showFullStatus(gameState);
     }
 
-    private void handleSurrender() {
-        gameState.getCurrentPlayer().surrender();
+    private boolean handleSurrender() {
+        Player player = gameState.getCurrentPlayer();
+        if (!view.confirmSurrender(player)) {
+            return false;
+        }
+        player.surrender();
+        view.showSurrenderConfirmed(player);
         gameState.checkVictoryConditions();
+        return true;
     }
+
+    private record MoveSnapshot(
+            Ship ship,
+            Position origin,
+            Position destination,
+            TerrainType destinationTerrain,
+            Treasure destinationTreasure,
+            int hpBefore,
+            int goldBefore
+    ) {}
+
+    private record EndTurnShipSnapshot(
+            Ship ship,
+            int hpBefore,
+            boolean inOwnPort,
+            int fireDamage,
+            Map<EffectType, Integer> effectsBefore
+    ) {}
 }

@@ -1,0 +1,692 @@
+diff --git a/src/main/java/tp2/controller/GameController.java b/src/main/java/tp2/controller/GameController.java
+index 95e5417..35b5df2 100644
+--- a/src/main/java/tp2/controller/GameController.java
++++ b/src/main/java/tp2/controller/GameController.java
+@@ -1,9 +1,13 @@
+ package tp2.controller;
+ 
++import tp2.config.GameConfig;
+ import tp2.controller.command.*;
+ import tp2.model.board.Board;
++import tp2.model.board.Cell;
+ import tp2.model.game.GameState;
+ import tp2.model.board.Position;
++import tp2.model.board.TerrainType;
++import tp2.model.combat.AttackResult;
+ import tp2.model.combat.CombatSystem;
+ import tp2.model.event.EventManager;
+ import tp2.model.event.GameEvent;
+@@ -13,13 +17,22 @@ import tp2.model.game.system.PortService;
+ import tp2.model.game.system.TurnProcessor;
+ import tp2.model.board.terrain.TerrainRegistry;
+ import tp2.model.player.Player;
++import tp2.model.resource.ResourceCosts;
++import tp2.model.ship.EffectType;
+ import tp2.model.ship.Ship;
+-import tp2.model.ship.ShipType;
++import tp2.model.ship.effect.FireEffect;
++import tp2.model.ship.effect.ShipEffect;
++import tp2.model.treasure.DynasticTreasure;
++import tp2.model.treasure.FloatingTreasure;
++import tp2.model.treasure.Treasure;
+ import tp2.view.GameView;
+ import tp2.view.ShipAction;
+ 
++import java.util.ArrayList;
++import java.util.EnumMap;
+ import java.util.HashSet;
+ import java.util.List;
++import java.util.Map;
+ import java.util.Set;
+ 
+ import static tp2.model.ship.ShipType.FLAGSHIP;
+@@ -116,7 +129,9 @@ public class GameController {
+             return;
+         }
+ 
++        List<EndTurnShipSnapshot> endTurnSnapshots = snapshotCurrentPlayerShipsForEndTurn();
+         turnProcessor.processEndOfTurn(gameState);
++        showEndTurnFeedback(endTurnSnapshots);
+         checkAndApplyEvent();
+         gameState.checkVictoryConditions();
+         gameState.switchTurn();
+@@ -158,7 +173,7 @@ public class GameController {
+             case 1 -> { showGameStatus(); yield false; }
+             case 2 -> { handleShipAction(); yield false; }
+             case 3 -> true;
+-            case 4 -> { handleSurrender(); yield true; }
++            case 4 -> handleSurrender();
+             default -> { view.showInvalidOption(); yield false; }
+         };
+     }
+@@ -193,6 +208,11 @@ public class GameController {
+      * Muestra las posiciones alcanzables y pide destino al jugador.
+      */
+     private void handleMove(Ship ship) {
++        if (!ship.canMove()) {
++            view.showActionUnavailable(ship, ShipAction.MOVE, describeMoveBlocker(ship));
++            return;
++        }
++
+         Set<Position> reachable = gameState.getBoard()
+                 .getReachablePositions(ship.getPosition(), ship.getEffectiveMovement());
+ 
+@@ -201,7 +221,14 @@ public class GameController {
+         if (destination == null) return;
+ 
+         ShipCommand command = new MoveCommand(ship, destination, movementResolver);
+-        executeCommand(command);
++        if (!command.canExecute(gameState)) {
++            view.showActionUnavailable(ship, ShipAction.MOVE, "el destino no está dentro de su alcance");
++            return;
++        }
++
++        MoveSnapshot before = snapshotMove(ship, destination);
++        command.execute(gameState);
++        showMoveFeedback(before);
+     }
+ 
+     /**
+@@ -209,6 +236,11 @@ public class GameController {
+      * Muestra los objetivos en rango y pide al jugador elegir uno.
+      */
+     private void handleAttack(Ship ship) {
++        if (!ship.canAttack()) {
++            view.showActionUnavailable(ship, ShipAction.ATTACK, describeAttackBlocker(ship));
++            return;
++        }
++
+         var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
+         List<Ship> targets = gameState.getBoard()
+                 .getTargetsInRange(ship, ship.getEffectiveRange(), opponent);
+@@ -221,8 +253,19 @@ public class GameController {
+         Ship target = view.askTarget(targets);
+         if (target == null) return;
+ 
+-        ShipCommand command = new AttackCommand(ship, target, combatSystem);
+-        executeCommand(command);
++        AttackCommand command = new AttackCommand(ship, target, combatSystem);
++        if (!command.canExecute(gameState)) {
++            view.showActionUnavailable(ship, ShipAction.ATTACK, "el objetivo está fuera de rango");
++            return;
++        }
++
++        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
++        command.execute(gameState);
++        view.showAttackResult(command.getLastResult());
++        if (command.getLastResult().isDefenderSunk()) {
++            int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
++            view.showShipSunkReward(target, goldAfter - goldBefore, goldAfter);
++        }
+     }
+ 
+     /**
+@@ -230,7 +273,17 @@ public class GameController {
+      */
+     private void handleRepair(Ship ship) {
+         ShipCommand command = new RepairCommand(ship, portService);
+-        executeCommand(command);
++        if (!command.canExecute(gameState)) {
++            view.showActionUnavailable(ship, ShipAction.REPAIR, describeRepairBlocker(ship));
++            return;
++        }
++
++        boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
++        int hpBefore = ship.getCurrentHp();
++        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
++        command.execute(gameState);
++        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
++        view.showRepairResult(ship, ship.getCurrentHp() - hpBefore, inOwnPort, woodSpent);
+     }
+ 
+     /**
+@@ -238,7 +291,15 @@ public class GameController {
+      */
+     private void handleBuyPort(Ship ship) {
+         ShipCommand command = new BuyPortCommand(ship, portService);
+-        executeCommand(command);
++        if (!command.canExecute(gameState)) {
++            view.showActionUnavailable(ship, ShipAction.BUY_PORT, describeBuyPortBlocker(ship));
++            return;
++        }
++
++        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
++        command.execute(gameState);
++        int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
++        view.showPortPurchased(ship, goldBefore - goldAfter, goldAfter);
+     }
+ 
+     /**
+@@ -246,25 +307,177 @@ public class GameController {
+      */
+     private void handleExtinguishFire(Ship ship) {
+         ShipCommand command = new ExtinguishFireCommand(ship, portService);
+-        executeCommand(command);
++        if (!command.canExecute(gameState)) {
++            view.showActionUnavailable(ship, ShipAction.EXTINGUISH_FIRE, describeExtinguishBlocker(ship));
++            return;
++        }
++
++        boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
++        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
++        command.execute(gameState);
++        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
++        view.showFireExtinguished(ship, inOwnPort, woodSpent);
+     }
+ 
+     // -------------------------------------------------------------------------
+-    // Ejecución de comandos
++    // Feedback de acciones
+     // -------------------------------------------------------------------------
+ 
+-    /**
+-     * Verifica canExecute y ejecuta el comando.
+-     * Si no puede ejecutarse, muestra error y vuelve al menú (no termina el turno).
+-     * Principio Tell Don't Ask: el comando sabe si puede ejecutarse,
+-     * el controller no inspecciona el estado para decidirlo.
+-     */
+-    private void executeCommand(ShipCommand command) {
+-        if (!command.canExecute(gameState)) {
+-            view.showError("Acción no válida en este momento.");
+-            return;
++    private MoveSnapshot snapshotMove(Ship ship, Position destination) {
++        Cell destinationCell = gameState.getBoard().getCellAt(destination);
++        return new MoveSnapshot(
++                ship,
++                ship.getPosition(),
++                destination,
++                destinationCell.getTerrain(),
++                destinationCell.getTreasure(),
++                ship.getCurrentHp(),
++                gameState.getCurrentPlayer().getResources().getGold()
++        );
++    }
++
++    private void showMoveFeedback(MoveSnapshot before) {
++        Ship ship = before.ship();
++        view.showMoveResult(ship, before.origin(), before.destination());
++
++        if (before.destinationTreasure() instanceof DynasticTreasure treasure) {
++            view.showDynasticTreasureCollected(ship, treasure.getOwner());
++        } else if (before.destinationTreasure() instanceof FloatingTreasure) {
++            int goldGained = gameState.getCurrentPlayer().getResources().getGold() - before.goldBefore();
++            view.showFloatingTreasureCollected(ship, goldGained, calculateFloatingTreasureRepair(before));
++        }
++
++        if (before.destinationTerrain() == TerrainType.REEF) {
++            view.showReefDamage(ship, calculateReefDamage(before));
++        } else if (before.destinationTerrain() == TerrainType.FOG) {
++            view.showFogEntered(ship);
++        } else if (before.destinationTerrain() == TerrainType.STORM) {
++            view.showStormEntered(ship);
++        }
++
++        if (before.destinationTerrain() == TerrainType.MARINE_CURRENT
++                && !ship.getPosition().equals(before.destination())) {
++            view.showMarineCurrentPush(ship, ship.getPosition());
++        }
++    }
++
++    private int calculateFloatingTreasureRepair(MoveSnapshot before) {
++        return Math.min(ResourceCosts.FLOATING_TREASURE_HP_REPAIR,
++                before.ship().getMaxHp() - before.hpBefore());
++    }
++
++    private int calculateReefDamage(MoveSnapshot before) {
++        int hpBeforeReef = before.hpBefore() + (before.destinationTreasure() instanceof FloatingTreasure
++                ? calculateFloatingTreasureRepair(before)
++                : 0);
++        int effectiveDamage = Math.max(0, GameConfig.REEF_DAMAGE - before.ship().getDef());
++        return Math.min(hpBeforeReef, effectiveDamage);
++    }
++
++    private List<EndTurnShipSnapshot> snapshotCurrentPlayerShipsForEndTurn() {
++        List<EndTurnShipSnapshot> snapshots = new ArrayList<>();
++        for (Ship ship : gameState.getCurrentPlayer().getActiveFleet()) {
++            snapshots.add(new EndTurnShipSnapshot(
++                    ship,
++                    ship.getCurrentHp(),
++                    portService.isShipInCurrentPlayerPort(gameState, ship),
++                    calculateFireDamage(ship),
++                    countEffects(ship.getActiveEffects())
++            ));
++        }
++        return snapshots;
++    }
++
++    private void showEndTurnFeedback(List<EndTurnShipSnapshot> snapshots) {
++        for (EndTurnShipSnapshot before : snapshots) {
++            Ship ship = before.ship();
++            int hpAfterFire = Math.max(0, before.hpBefore() - before.fireDamage());
++            if (before.fireDamage() > 0) {
++                view.showEndTurnFireDamage(ship, before.fireDamage(), hpAfterFire);
++            }
++
++            int hpRecovered = ship.getCurrentHp() - hpAfterFire;
++            if (before.inOwnPort() && hpRecovered > 0) {
++                view.showEndTurnPortRepair(ship, hpRecovered);
++            }
++
++            Map<EffectType, Integer> effectsAfter = countEffects(ship.getActiveEffects());
++            for (var entry : before.effectsBefore().entrySet()) {
++                int expired = entry.getValue() - effectsAfter.getOrDefault(entry.getKey(), 0);
++                for (int index = 0; index < expired; index++) {
++                    view.showEffectExpired(ship, entry.getKey());
++                }
++            }
+         }
+-        command.execute(gameState);
++    }
++
++    private int calculateFireDamage(Ship ship) {
++        int hpRemaining = ship.getCurrentHp();
++        for (ShipEffect effect : ship.getActiveEffects()) {
++            if (effect instanceof FireEffect fireEffect) {
++                int damage = Math.max(0, fireEffect.getDamagePerTurn() - ship.getDef());
++                hpRemaining = Math.max(0, hpRemaining - damage);
++            }
++        }
++        return ship.getCurrentHp() - hpRemaining;
++    }
++
++    private Map<EffectType, Integer> countEffects(List<ShipEffect> effects) {
++        Map<EffectType, Integer> counts = new EnumMap<>(EffectType.class);
++        for (ShipEffect effect : effects) {
++            counts.merge(effect.getType(), 1, Integer::sum);
++        }
++        return counts;
++    }
++
++    private String describeMoveBlocker(Ship ship) {
++        if (ship.isSunk()) return "está hundido";
++        if (ship.hasMovedThisTurn()) return "ya se movió en este turno";
++        if (ship.hasAttackedThisTurn() && !canMoveAfterAttack(ship)) {
++            return "ya atacó en este turno";
++        }
++        return "tiene un efecto activo que le impide moverse";
++    }
++
++    private String describeAttackBlocker(Ship ship) {
++        if (ship.isSunk()) return "está hundido";
++        if (ship.hasAttackedThisTurn()) return "ya atacó en este turno";
++        if (ship.isOnFire()) return "tiene un incendio activo";
++        return "tiene un efecto activo que le impide atacar";
++    }
++
++    private String describeRepairBlocker(Ship ship) {
++        if (ship.isSunk()) return "está hundido";
++        if (!portService.isShipInCurrentPlayerPort(gameState, ship)
++                && !gameState.getCurrentPlayer().getResources()
++                        .hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
++            return "no está en un puerto propio y no tiene madera suficiente";
++        }
++        return "no cumple las condiciones para repararse";
++    }
++
++    private String describeBuyPortBlocker(Ship ship) {
++        if (!portService.isUnownedPortAtShipPosition(gameState, ship)) {
++            return "no está sobre un puerto neutral";
++        }
++        if (!gameState.getCurrentPlayer().getResources().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
++            return "no tiene oro suficiente";
++        }
++        return "no cumple las condiciones para comprar puerto";
++    }
++
++    private String describeExtinguishBlocker(Ship ship) {
++        if (!ship.isOnFire()) return "no tiene incendio activo";
++        if (!portService.isShipInCurrentPlayerPort(gameState, ship)
++                && !gameState.getCurrentPlayer().getResources()
++                        .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
++            return "no está en un puerto propio y no tiene madera suficiente";
++        }
++        return "no cumple las condiciones para apagar el incendio";
++    }
++
++    private boolean canMoveAfterAttack(Ship ship) {
++        return ship.getActiveEffects().stream().anyMatch(ShipEffect::allowsMoveAfterAttack);
+     }
+ 
+     /**
+@@ -287,8 +500,32 @@ public class GameController {
+         view.showFullStatus(gameState);
+     }
+ 
+-    private void handleSurrender() {
+-        gameState.getCurrentPlayer().surrender();
++    private boolean handleSurrender() {
++        Player player = gameState.getCurrentPlayer();
++        if (!view.confirmSurrender(player)) {
++            return false;
++        }
++        player.surrender();
++        view.showSurrenderConfirmed(player);
+         gameState.checkVictoryConditions();
++        return true;
+     }
++
++    private record MoveSnapshot(
++            Ship ship,
++            Position origin,
++            Position destination,
++            TerrainType destinationTerrain,
++            Treasure destinationTreasure,
++            int hpBefore,
++            int goldBefore
++    ) {}
++
++    private record EndTurnShipSnapshot(
++            Ship ship,
++            int hpBefore,
++            boolean inOwnPort,
++            int fireDamage,
++            Map<EffectType, Integer> effectsBefore
++    ) {}
+ }
+diff --git a/src/main/java/tp2/controller/command/AttackCommand.java b/src/main/java/tp2/controller/command/AttackCommand.java
+index 426f09e..b0e6592 100644
+--- a/src/main/java/tp2/controller/command/AttackCommand.java
++++ b/src/main/java/tp2/controller/command/AttackCommand.java
+@@ -1,5 +1,6 @@
+ package tp2.controller.command;
+ 
++import tp2.model.combat.AttackResult;
+ import tp2.model.game.GameState;
+ import tp2.model.combat.CombatSystem;
+ import tp2.model.ship.Ship;
+@@ -9,6 +10,7 @@ public class AttackCommand implements ShipCommand {
+     private final Ship attacker;
+     private final Ship target;
+     private final CombatSystem combatSystem;
++    private AttackResult lastResult;
+ 
+     public AttackCommand(Ship attacker, Ship target, CombatSystem combatSystem) {
+         this.attacker = attacker;
+@@ -25,6 +27,7 @@ public class AttackCommand implements ShipCommand {
+     @Override
+     public void execute(GameState gameState) {
+         var result = combatSystem.attack(attacker, target);
++        lastResult = result;
+ 
+         if (result.isDefenderSunk()) {
+             var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
+@@ -36,4 +39,6 @@ public class AttackCommand implements ShipCommand {
+ 
+         gameState.checkVictoryConditions();
+     }
++
++    public AttackResult getLastResult() { return lastResult; }
+ }
+diff --git a/src/main/java/tp2/view/ConsoleView.java b/src/main/java/tp2/view/ConsoleView.java
+index 8a797e5..b4ef068 100644
+--- a/src/main/java/tp2/view/ConsoleView.java
++++ b/src/main/java/tp2/view/ConsoleView.java
+@@ -7,6 +7,7 @@ import tp2.model.event.GameEvent;
+ import tp2.model.game.GameState;
+ import tp2.model.game.VictoryCondition;
+ import tp2.model.player.Player;
++import tp2.model.ship.EffectType;
+ import tp2.model.ship.Ship;
+ import tp2.model.treasure.DynasticTreasure;
+ 
+@@ -162,8 +163,11 @@ public class ConsoleView implements GameView {
+ 
+     @Override
+     public void showTurnSummary(GameState gameState) {
+-        out.println("Turno " + gameState.getTurnNumber() + " | Jugador: "
+-                + gameState.getCurrentPlayer() + " | " + gameState.getCurrentPlayer().getResources());
++        Player current = gameState.getCurrentPlayer();
++        int playerNumber = getPlayerNumber(current, gameState);
++        out.println("Turno " + gameState.getTurnNumber()
++                + " | Jugador " + playerNumber + " - " + current.getFaction()
++                + " | " + current.getResources());
+     }
+ 
+     @Override
+@@ -172,7 +176,7 @@ public class ConsoleView implements GameView {
+         showTurnSummary(gameState);
+         for (Player player : gameState.getPlayers()) {
+             out.println();
+-            out.println(player + " | Recursos: " + player.getResources());
++            out.println("Jugador " + getPlayerNumber(player, gameState) + " - " + player.getFaction() + " | Recursos: " + player.getResources());
+             out.println("Puerto inicial: " + displayPosition(player.getHomePortPosition()));
+             out.println("Flota:");
+             if (player.getActiveFleet().isEmpty()) {
+@@ -204,7 +208,121 @@ public class ConsoleView implements GameView {
+ 
+     @Override
+     public void showAttackResult(AttackResult result) {
+-        out.println(result);
++        out.println(result.getAttacker().getName() + " atacó a " + result.getDefender().getName()
++                + " y causó " + result.getDamageDealt() + " de daño.");
++        out.println(result.getDefender().getName() + " queda con "
++                + result.getDefender().getCurrentHp() + "/" + result.getDefender().getMaxHp() + " HP.");
++        if (result.isDefenderSunk()) {
++            out.println("*** " + result.getDefender().getName() + " fue hundido. ***");
++        }
++    }
++
++    @Override
++    public void showMoveResult(Ship ship, Position origin, Position destination) {
++        out.println(ship.getName() + " se movió de " + displayPosition(origin)
++                + " a " + displayPosition(destination) + ".");
++    }
++
++    @Override
++    public void showMarineCurrentPush(Ship ship, Position pushedTo) {
++        out.println("Corriente marina: " + ship.getName()
++                + " fue empujado hasta " + displayPosition(pushedTo) + ".");
++    }
++
++    @Override
++    public void showReefDamage(Ship ship, int hpLost) {
++        out.println("Arrecife: " + ship.getName() + " recibió " + hpLost
++                + " de daño y queda con " + ship.getCurrentHp() + "/"
++                + ship.getMaxHp() + " HP.");
++    }
++
++    @Override
++    public void showFogEntered(Ship ship) {
++        out.println("Niebla: " + ship.getName()
++                + " entró en una zona de niebla. Sus estadísticas se redujeron.");
++    }
++
++    @Override
++    public void showStormEntered(Ship ship) {
++        out.println("Tormenta: " + ship.getName()
++                + " entró en una zona de tormenta. Su movimiento se redujo.");
++    }
++
++    @Override
++    public void showDynasticTreasureCollected(Ship ship, Player owner) {
++        out.println(ship.getName() + " recogió el tesoro dinástico de " + owner + ".");
++    }
++
++    @Override
++    public void showFloatingTreasureCollected(Ship ship, int goldGained, int hpRecovered) {
++        out.println(ship.getName() + " recogió un tesoro flotante: +"
++                + goldGained + " oro, +" + hpRecovered + " HP.");
++    }
++
++    @Override
++    public void showShipSunkReward(Ship ship, int goldGained, int goldRemaining) {
++        out.println("Recompensa por hundir a " + ship.getName() + ": +"
++                + goldGained + " oro. Oro actual: " + goldRemaining + ".");
++    }
++
++    @Override
++    public void showRepairResult(Ship ship, int hpRecovered, boolean inOwnPort, int woodSpent) {
++        String cost = inOwnPort ? "gratis en puerto propio" : "gastando " + woodSpent + " madera";
++        out.println(ship.getName() + " recuperó " + hpRecovered + " HP "
++                + "(" + cost + "). HP actual: " + ship.getCurrentHp()
++                + "/" + ship.getMaxHp() + ".");
++    }
++
++    @Override
++    public void showPortPurchased(Ship ship, int goldSpent, int goldRemaining) {
++        out.println(ship.getName() + " compró el puerto en "
++                + displayPosition(ship.getPosition()) + ". Oro gastado: "
++                + goldSpent + ". Oro restante: " + goldRemaining + ".");
++    }
++
++    @Override
++    public void showFireExtinguished(Ship ship, boolean inOwnPort, int woodSpent) {
++        String cost = inOwnPort ? "gratis en puerto propio" : "gastando " + woodSpent + " madera";
++        out.println("Incendio apagado en " + ship.getName() + " (" + cost + ").");
++    }
++
++    @Override
++    public boolean confirmSurrender(Player player) {
++        out.print(player + ", confirme rendición (s/N): ");
++        String input = readLine().trim();
++        return input.equalsIgnoreCase("s") || input.equalsIgnoreCase("si");
++    }
++
++    @Override
++    public void showSurrenderConfirmed(Player player) {
++        out.println(player + " se rindió.");
++    }
++
++    @Override
++    public void showEndTurnPortRepair(Ship ship, int hpRecovered) {
++        out.println("Fin de turno: " + ship.getName()
++                + " se reparó en puerto propio y recuperó " + hpRecovered
++                + " HP. HP actual: " + ship.getCurrentHp() + "/"
++                + ship.getMaxHp() + ".");
++    }
++
++    @Override
++    public void showEndTurnFireDamage(Ship ship, int hpLost, int hpRemaining) {
++        out.println("Fin de turno: " + ship.getName()
++                + " perdió " + hpLost + " HP por incendio. HP tras el fuego: "
++                + hpRemaining + "/" + ship.getMaxHp() + ".");
++    }
++
++    @Override
++    public void showEffectExpired(Ship ship, EffectType effectType) {
++        out.println("Fin de turno: " + describeEffect(effectType)
++                + " expiró en " + ship.getName() + ".");
++    }
++
++    @Override
++    public void showActionUnavailable(Ship ship, ShipAction action, String reason) {
++        showError(ship.getName() + " no puede " + describeActionVerb(action)
++                + ": " + reason + ".");
+     }
+ 
+     // -------------------------------------------------------------------------
+@@ -414,6 +532,28 @@ public class ConsoleView implements GameView {
+         };
+     }
+ 
++    private String describeActionVerb(ShipAction action) {
++        return switch (action) {
++            case MOVE -> "moverse";
++            case ATTACK -> "atacar";
++            case REPAIR -> "repararse";
++            case BUY_PORT -> "comprar puerto";
++            case EXTINGUISH_FIRE -> "apagar el incendio";
++            case CANCEL -> "cancelar";
++        };
++    }
++
++    private String describeEffect(EffectType effectType) {
++        return switch (effectType) {
++            case FIRE -> "Incendio";
++            case IMMOBILIZED -> "Inmovilización";
++            case REDUCED_MOVEMENT -> "Movimiento reducido";
++            case REDUCED_ATTACK -> "Ataque reducido";
++            case LOST_ACTION -> "Pérdida de acción";
++            case FAVORABLE_WIND -> "Viento favorable";
++        };
++    }
++
+     /** Traduce la condicion de victoria a un mensaje de cierre. */
+     private String describeVictory(VictoryCondition condition) {
+         if (condition == null) {
+@@ -430,4 +570,8 @@ public class ConsoleView implements GameView {
+     private String displayPosition(Position position) {
+         return position == null ? "sin posicion" : position.toString();
+     }
++
++    private int getPlayerNumber(Player player, GameState gameState) {
++        return gameState.getPlayers().indexOf(player) + 1;
++    }
+ }
+diff --git a/src/main/java/tp2/view/GameView.java b/src/main/java/tp2/view/GameView.java
+index 22f2a43..900cace 100644
+--- a/src/main/java/tp2/view/GameView.java
++++ b/src/main/java/tp2/view/GameView.java
+@@ -7,6 +7,7 @@ import tp2.model.combat.AttackResult;
+ import tp2.model.event.EventResult;
+ import tp2.model.event.GameEvent;
+ import tp2.model.player.Player;
++import tp2.model.ship.EffectType;
+ import tp2.model.ship.Ship;
+ 
+ import java.util.List;
+@@ -98,6 +99,57 @@ public interface GameView {
+     /** Muestra el resultado de un ataque. */
+     void showAttackResult(AttackResult result);
+ 
++    /** Muestra el resultado general de un movimiento exitoso. */
++    void showMoveResult(Ship ship, Position origin, Position destination);
++
++    /** Muestra que una corriente marina empujo al barco. */
++    void showMarineCurrentPush(Ship ship, Position pushedTo);
++
++    /** Muestra el daño recibido por entrar en un arrecife. */
++    void showReefDamage(Ship ship, int hpLost);
++
++    /** Muestra que el barco entro en niebla. */
++    void showFogEntered(Ship ship);
++
++    /** Muestra que el barco entro en tormenta. */
++    void showStormEntered(Ship ship);
++
++    /** Muestra que el barco recogio un tesoro dinastico. */
++    void showDynasticTreasureCollected(Ship ship, Player owner);
++
++    /** Muestra que el barco recogio un tesoro flotante. */
++    void showFloatingTreasureCollected(Ship ship, int goldGained, int hpRecovered);
++
++    /** Muestra la recompensa por hundir un barco. */
++    void showShipSunkReward(Ship ship, int goldGained, int goldRemaining);
++
++    /** Muestra el resultado de una reparacion manual. */
++    void showRepairResult(Ship ship, int hpRecovered, boolean inOwnPort, int woodSpent);
++
++    /** Muestra el resultado de comprar un puerto. */
++    void showPortPurchased(Ship ship, int goldSpent, int goldRemaining);
++
++    /** Muestra el resultado de apagar un incendio. */
++    void showFireExtinguished(Ship ship, boolean inOwnPort, int woodSpent);
++
++    /** Confirma la rendicion antes de ejecutarla. */
++    boolean confirmSurrender(Player player);
++
++    /** Muestra que la rendicion fue confirmada. */
++    void showSurrenderConfirmed(Player player);
++
++    /** Muestra reparaciones automaticas de fin de turno en puerto propio. */
++    void showEndTurnPortRepair(Ship ship, int hpRecovered);
++
++    /** Muestra el daño de incendio aplicado al finalizar el turno. */
++    void showEndTurnFireDamage(Ship ship, int hpLost, int hpRemaining);
++
++    /** Muestra que un efecto temporal expiro. */
++    void showEffectExpired(Ship ship, EffectType effectType);
++
++    /** Muestra por que un barco no puede ejecutar una accion. */
++    void showActionUnavailable(Ship ship, ShipAction action, String reason);
++
+     // -------------------------------------------------------------------------
+     // Eventos
+     // -------------------------------------------------------------------------
+@@ -127,4 +179,4 @@ public interface GameView {
+     void showNoTargets();
+     void showInvalidOption();
+     void showCellInvalid();
+-}
+\ No newline at end of file
++}
