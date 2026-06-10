@@ -4,12 +4,12 @@
   "cells": [
     {
       "row": 0,
-      "col": 4,
+      "col": 3,
       "terrain": "PORT"
     },
     {
       "row": 0,
-      "col": 5,
+      "col": 6,
       "terrain": "PORT"
     },
     {
@@ -142,12 +142,12 @@
     },
     {
       "row": 9,
-      "col": 4,
+      "col": 3,
       "terrain": "PORT"
     },
     {
       "row": 9,
-      "col": 5,
+      "col": 6,
       "terrain": "PORT"
     }
   ]
