@@ -4,13 +4,9 @@ import tp2.model.player.Player;
 import tp2.model.ship.Ship;
 
 public interface Treasure {
-    /*
-    Obtener el tipo de tesoro
-     */
+    /** @return tipo de tesoro. */
     TreasureType getType();
 
-    /*
-    Obtener la propiedad de ser agarrado.
-     */
+    /** Ejecuta el efecto del tesoro cuando un barco lo recoge. */
     void onPickUp(Ship ship, Player player);
 }

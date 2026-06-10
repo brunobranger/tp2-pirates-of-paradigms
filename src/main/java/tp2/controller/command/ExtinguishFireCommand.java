@@ -1,22 +1,24 @@
 package tp2.controller.command;
 
 import tp2.model.game.GameState;
+import tp2.model.game.system.PortService;
 import tp2.model.ship.Ship;
 import tp2.model.resource.ResourceCosts;
 
 public class ExtinguishFireCommand implements ShipCommand {
 
     private final Ship ship;
+    private final PortService portService;
 
-    public ExtinguishFireCommand(Ship ship) {
+    public ExtinguishFireCommand(Ship ship, PortService portService) {
         this.ship = ship;
+        this.portService = portService;
     }
 
     @Override
     public boolean canExecute(GameState gameState) {
         if (!ship.isOnFire()) return false;
-        var cell = gameState.getBoard().getCellAt(ship.getPosition());
-        boolean inOwnPort = cell.isOwnedPortOf(gameState.getCurrentPlayer());
+        boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
         boolean hasWood = gameState.getCurrentPlayer().getResources()
                 .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);
         return inOwnPort || hasWood;
@@ -24,9 +26,7 @@ public class ExtinguishFireCommand implements ShipCommand {
 
     @Override
     public void execute(GameState gameState) {
-        var cell = gameState.getBoard().getCellAt(ship.getPosition());
-
-        if (cell.isOwnedPortOf(gameState.getCurrentPlayer())) {
+        if (portService.isShipInCurrentPlayerPort(gameState, ship)) {
             ship.extinguishFire(); // gratis en puerto propio
         } else {
             gameState.getCurrentPlayer().getResources()

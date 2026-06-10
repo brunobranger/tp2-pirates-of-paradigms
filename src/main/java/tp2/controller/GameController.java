@@ -2,16 +2,18 @@ package tp2.controller;
 
 import tp2.controller.command.*;
 import tp2.model.board.Board;
-import tp2.model.board.Cell;
 import tp2.model.game.GameState;
 import tp2.model.board.Position;
 import tp2.model.combat.CombatSystem;
 import tp2.model.event.EventManager;
 import tp2.model.event.GameEvent;
+import tp2.model.game.system.CellInteractionResolver;
+import tp2.model.game.system.MovementResolver;
+import tp2.model.game.system.PortService;
+import tp2.model.game.system.TurnProcessor;
+import tp2.model.board.terrain.TerrainRegistry;
 import tp2.model.player.Player;
 import tp2.model.ship.Ship;
-import tp2.model.treasure.DynasticTreasure;
-import tp2.view.ConsoleView;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
@@ -19,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static tp2.model.board.TerrainType.PORT;
 import static tp2.model.ship.ShipType.FLAGSHIP;
 import static tp2.util.RandomUtils.coinFlip; // import estatico de Coin
 
@@ -42,13 +43,33 @@ public class GameController {
     private final GameView view;
     private final CombatSystem combatSystem;
     private final EventManager eventManager;
+    private final MovementResolver movementResolver;
+    private final TurnProcessor turnProcessor;
+    private final PortService portService;
 
     public GameController(GameState gameState, GameView view,
                           CombatSystem combatSystem, EventManager eventManager) {
+        PortService defaultPortService = new PortService();
         this.gameState = gameState;
         this.view = view;
         this.combatSystem = combatSystem;
         this.eventManager = eventManager;
+        this.movementResolver = new MovementResolver(new CellInteractionResolver(TerrainRegistry.defaultRegistry()));
+        this.turnProcessor = new TurnProcessor(defaultPortService);
+        this.portService = defaultPortService;
+    }
+
+    public GameController(GameState gameState, GameView view,
+                          CombatSystem combatSystem, EventManager eventManager,
+                          MovementResolver movementResolver, TurnProcessor turnProcessor,
+                          PortService portService) {
+        this.gameState = gameState;
+        this.view = view;
+        this.combatSystem = combatSystem;
+        this.eventManager = eventManager;
+        this.movementResolver = movementResolver;
+        this.turnProcessor = turnProcessor;
+        this.portService = portService;
     }
 
     // -------------------------------------------------------------------------
@@ -60,10 +81,6 @@ public class GameController {
      * Alterna turnos hasta que haya un ganador.
      */
     public void start() {
-        if (view instanceof ConsoleView _view) {
-            _view.setGameState(this.gameState);
-        }
-
         decideFirstPlayer();
         executeInitialDeployment();
 
@@ -101,7 +118,7 @@ public class GameController {
             return;
         }
 
-        handleFinishedTurn();
+        turnProcessor.processEndOfTurn(gameState);
         checkAndApplyEvent();
         gameState.checkVictoryConditions();
         gameState.switchTurn();
@@ -117,13 +134,7 @@ public class GameController {
         for (Player player : gameState.getPlayers()) {
             Set<Position> validPositions = new HashSet<>(board.getFreeNavigablePositions());
             Position portPos = view.askPortPosition(player, validPositions);
-
-            Cell portCell = board.getCellAt(portPos);
-            portCell.changeTerrain(PORT);
-            portCell.assignPortOwner(player);
-
-            player.setHomePortPosition(portPos);
-            portCell.placeShip(player.getFlagship());
+            portService.placeInitialPort(board, player, portPos);
 
             for (Ship ship : player.getActiveFleet()) {
                 if (ship.getType().equals(FLAGSHIP)) {
@@ -132,9 +143,7 @@ public class GameController {
 
                 Set<Position> validPositionsForShip = new HashSet<>(board.getFreeNavigablePositions());
                 Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip);
-
-                Cell targetCell = board.getCellAt(shipPos);
-                targetCell.placeShip(ship);
+                portService.placeInitialShip(board, ship, shipPos);
             }
         }
     }
@@ -195,7 +204,7 @@ public class GameController {
         Position destination = view.askDestination(reachable);
         if (destination == null) return;
 
-        ShipCommand command = new MoveCommand(ship, destination);
+        ShipCommand command = new MoveCommand(ship, destination, movementResolver);
         executeCommand(command);
     }
 
@@ -224,7 +233,7 @@ public class GameController {
      * Construye y ejecuta un RepairCommand.
      */
     private void handleRepair(Ship ship) {
-        ShipCommand command = new RepairCommand(ship);
+        ShipCommand command = new RepairCommand(ship, portService);
         executeCommand(command);
     }
 
@@ -232,7 +241,7 @@ public class GameController {
      * Construye y ejecuta un BuyPortCommand.
      */
     private void handleBuyPort(Ship ship) {
-        ShipCommand command = new BuyPortCommand(ship);
+        ShipCommand command = new BuyPortCommand(ship, portService);
         executeCommand(command);
     }
 
@@ -240,7 +249,7 @@ public class GameController {
      * Construye y ejecuta un ExtinguishFireCommand.
      */
     private void handleExtinguishFire(Ship ship) {
-        ShipCommand command = new ExtinguishFireCommand(ship);
+        ShipCommand command = new ExtinguishFireCommand(ship, portService);
         executeCommand(command);
     }
 
@@ -260,40 +269,6 @@ public class GameController {
             return;
         }
         command.execute(gameState);
-    }
-
-    // -------------------------------------------------------------------------
-    // Fin de turno
-    // -------------------------------------------------------------------------
-
-    /**
-     * Aplica efectos de fin de turno: daño por incendio, tick de efectos activos,
-     * reparación en puerto propio, limpieza de tesoros flotantes vencidos.
-     */
-    private void handleFinishedTurn() {
-        Player currentPlayer = gameState.getCurrentPlayer();
-
-        // Daño por incendio y tick de efectos para cada barco activo
-        for (Ship ship : currentPlayer.getActiveFleet()) {
-            ship.getActiveEffects().forEach(e -> e.applyEndOfTurnDamage(ship));
-            ship.resetTurnState();
-
-            // Reparación automática en puerto propio al finalizar turno
-            Cell cell = gameState.getBoard().getCellAt(ship.getPosition());
-            if (cell.isOwnedPortOf(currentPlayer)) {
-                ship.repairHp(tp2.config.GameConfig.PORT_REPAIR_AMOUNT);
-
-                // Condición de victoria: tesoro enemigo en puerto propio
-                if (ship.isCarryingTreasure()) {
-                    DynasticTreasure carried = ship.getCarriedTreasure();
-                    if (!carried.getOwner().equals(currentPlayer)) {
-                        gameState.checkVictoryConditions();
-                    }
-                }
-            }
-        }
-
-        gameState.cleanExpiredFloatingTreasures();
     }
 
     /**

@@ -1,7 +1,6 @@
 package tp2.model.game;
 
 import tp2.model.board.Board;
-import tp2.model.board.Cell;
 import tp2.model.board.Position;
 import tp2.model.board.TerrainType;
 import tp2.model.player.Player;
@@ -15,7 +14,6 @@ import tp2.model.victory.VictoryStrategy;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
 
 import static tp2.util.RandomUtils.nextInt;
 
@@ -38,7 +36,6 @@ public class GameState {
     private int turnNumber;
     private VictoryCondition victoryCondition;
     private Player playerWinner;
-    private boolean canMoveAndAttackSameTurn;
 
 
     public GameState(Board board, List<Player> players) {
@@ -101,7 +98,6 @@ public class GameState {
         if (nextIndex == 0) this.turnNumber++;
 
         this.currentPlayer.resetFleetTurnState();
-        setCanMoveAndAttackSameTurn(false);
     }
 
     /**
@@ -190,14 +186,14 @@ public class GameState {
     public List<String> applyDamageToShipsInArea(List<Position> area, int damage){
         List<String> affectedShips = new ArrayList<>();
         for(Position pos : area) {
-            try {
-                Ship ship = board.getCellAt(pos).getOccupant();
-                if (ship != null) {
-                    ship.receiveDamage(damage);
-                    affectedShips.add(ship.getName());
-                }
-            } catch (IllegalArgumentException error) {
-                //si la posición no es válida no se hace nada
+            if (!board.isWithinBounds(pos)) {
+                continue;
+            }
+
+            Ship ship = board.getShipAt(pos);
+            if (ship != null) {
+                ship.receiveDamage(damage);
+                affectedShips.add(ship.getName());
             }
         }
         return affectedShips;
@@ -246,7 +242,5 @@ public class GameState {
 
     public void setVictoryCondition(VictoryCondition condition) { this.victoryCondition = condition; }
     public void setPlayerWinner(Player player) { this.playerWinner = player; }
-    public boolean canMoveAndAttackSameTurn() { return canMoveAndAttackSameTurn; }
-    public void setCanMoveAndAttackSameTurn(boolean v) { this.canMoveAndAttackSameTurn = v; }
     public void setCurrentPlayer(Player p) { this.currentPlayer = p; }
 }

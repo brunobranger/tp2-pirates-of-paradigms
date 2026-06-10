@@ -1,0 +1,154 @@
+{
+  "rows": 10,
+  "cols": 10,
+  "cells": [
+    {
+      "row": 0,
+      "col": 3,
+      "terrain": "PORT"
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "terrain": "PORT"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "terrain": "FOG"
+    },
+    {
+      "row": 1,
+      "col": 8,
+      "terrain": "FOG"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "EAST"
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "terrain": "MARINE_CURRENT",
+      "direction": "EAST"
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "terrain": "MARINE_CURRENT",
+      "direction": "WEST"
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "WEST"
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "terrain": "REEF"
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "terrain": "REEF"
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "terrain": "STORM"
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 4,
+      "col": 9,
+      "terrain": "STORM"
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "terrain": "STORM"
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "terrain": "ISLAND"
+    },
+    {
+      "row": 5,
+      "col": 9,
+      "terrain": "STORM"
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "terrain": "REEF"
+    },
+    {
+      "row": 6,
+      "col": 5,
+      "terrain": "REEF"
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "terrain": "MARINE_CURRENT",
+      "direction": "EAST"
+    },
+    {
+      "row": 7,
+      "col": 3,
+      "terrain": "MARINE_CURRENT",
+      "direction": "EAST"
+    },
+    {
+      "row": 7,
+      "col": 6,
+      "terrain": "MARINE_CURRENT",
+      "direction": "WEST"
+    },
+    {
+      "row": 7,
+      "col": 7,
+      "terrain": "MARINE_CURRENT",
+      "direction": "WEST"
+    },
+    {
+      "row": 8,
+      "col": 1,
+      "terrain": "FOG"
+    },
+    {
+      "row": 8,
+      "col": 8,
+      "terrain": "FOG"
+    },
+    {
+      "row": 9,
+      "col": 3,
+      "terrain": "PORT"
+    },
+    {
+      "row": 9,
+      "col": 6,
+      "terrain": "PORT"
+    }
+  ]
+}
