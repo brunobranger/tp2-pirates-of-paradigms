@@ -160,7 +160,7 @@ public class Cell {
      * Se debe llamar al pasar el turno. Si el efecto expira, vuelve al estado base.
      */
     public void decrementClimateDuration() {
-        if (climateEffectDuration > 0) {
+        if (this.climateOverride != null && climateEffectDuration > 0) {
             climateEffectDuration--;
             if (climateEffectDuration == 0) {
                 this.climateOverride = null;

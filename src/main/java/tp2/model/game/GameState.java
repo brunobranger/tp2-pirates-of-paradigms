@@ -204,7 +204,7 @@ public class GameState {
 
     public void applyEffectToCurrentPlayerFleet(ShipEffect effect){
         for(Ship ship : this.currentPlayer.getActiveFleet())
-            ship.addEffect(effect);
+            ship.addEffect(effect.clone());
     }
 
     public String applyEffectToCurrentPlayerRandomShip(ShipEffect effect){
@@ -216,6 +216,28 @@ public class GameState {
 
     public void applyCostIncreaseToCurrentPlayer(double costMultiplier, int duration){
         this.getCurrentPlayer().getResources().applyCostIncrease(costMultiplier, duration);
+    }
+
+    public void applyEffectToAllAgileShips(ShipEffect effect){
+        for (var player : players) {
+            for (var ship : player.getActiveFleet()) {
+                if(ship.isAgile())
+                    ship.addEffect(effect.clone());
+            }
+        }
+    }
+
+    public void applyEffectToAllNonAgileShips(ShipEffect effect){
+        for (var player : players) {
+            for (var ship : player.getActiveFleet()) {
+                if(!ship.isAgile())
+                    ship.addEffect(effect.clone());
+            }
+        }
+    }
+
+    public void updateClimateEffect(){
+        this.board.updateClimateEffect();
     }
 
     // -------------------------------------------------------------------------

@@ -21,6 +21,11 @@ public class FavorableWindEffect implements ShipEffect {
     }
 
     @Override
+    public ShipEffect clone(){
+        return new FavorableWindEffect(this.turnsRemaining, this.rangeBonus, this.movementBonus);
+    }
+
+    @Override
     public EffectType getType() {
         return EffectType.FAVORABLE_WIND;
     }

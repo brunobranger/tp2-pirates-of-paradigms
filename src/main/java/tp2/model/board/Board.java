@@ -188,6 +188,15 @@ public class Board {
         return affectedPositions;
     }
 
+    /**
+     * Actualiza los efectos de clima en todas las celdas del tablero
+     */
+    public void updateClimateEffect(){
+        for(int row = 0; row < this.rows; row++)
+            for(int col = 0; col < this.cols; col++)
+                this.getCellAt(new Position(row, col)).decrementClimateDuration();
+    }
+
     // -------------------------------------------------------------------------
     // Combate / rango
     // -------------------------------------------------------------------------

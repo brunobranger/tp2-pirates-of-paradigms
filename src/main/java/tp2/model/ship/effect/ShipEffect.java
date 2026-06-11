@@ -14,6 +14,12 @@ public interface ShipEffect {
     EffectType getType();
 
     /**
+     * retorna una nueva instancia del efecto con los mismos parámetros
+     * @return
+     */
+    ShipEffect clone();
+
+    /**
      * Avanza un turno en la duración del efecto.
      * Los efectos permanentes ignoran este llamado.
      */
