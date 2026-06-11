@@ -27,7 +27,7 @@ public class Main {
             controller.start();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error initiating game: " + e.getMessage());
         }
     }
 }
