@@ -1,5 +1,6 @@
 package tp2.controller.command;
 
+import tp2.model.combat.AttackResult;
 import tp2.model.game.GameState;
 import tp2.model.combat.CombatSystem;
 import tp2.model.ship.Ship;
@@ -9,6 +10,7 @@ public class AttackCommand implements ShipCommand {
     private final Ship attacker;
     private final Ship target;
     private final CombatSystem combatSystem;
+    private AttackResult lastResult;
 
     public AttackCommand(Ship attacker, Ship target, CombatSystem combatSystem) {
         this.attacker = attacker;
@@ -25,6 +27,7 @@ public class AttackCommand implements ShipCommand {
     @Override
     public void execute(GameState gameState) {
         var result = combatSystem.attack(attacker, target);
+        lastResult = result;
 
         if (result.isDefenderSunk()) {
             var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
@@ -36,4 +39,6 @@ public class AttackCommand implements ShipCommand {
 
         gameState.checkVictoryConditions();
     }
+
+    public AttackResult getLastResult() { return lastResult; }
 }

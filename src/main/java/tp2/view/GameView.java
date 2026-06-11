@@ -7,6 +7,7 @@ import tp2.model.combat.AttackResult;
 import tp2.model.event.EventResult;
 import tp2.model.event.GameEvent;
 import tp2.model.player.Player;
+import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
 
 import java.util.List;
@@ -97,6 +98,57 @@ public interface GameView {
 
     /** Muestra el resultado de un ataque. */
     void showAttackResult(AttackResult result);
+
+    /** Muestra el resultado general de un movimiento exitoso. */
+    void showMoveResult(Ship ship, Position origin, Position destination);
+
+    /** Muestra que una corriente marina empujo al barco. */
+    void showMarineCurrentPush(Ship ship, Position pushedTo);
+
+    /** Muestra el daño recibido por entrar en un arrecife. */
+    void showReefDamage(Ship ship, int hpLost);
+
+    /** Muestra que el barco entro en niebla. */
+    void showFogEntered(Ship ship);
+
+    /** Muestra que el barco entro en tormenta. */
+    void showStormEntered(Ship ship);
+
+    /** Muestra que el barco recogio un tesoro dinastico. */
+    void showDynasticTreasureCollected(Ship ship, Player owner);
+
+    /** Muestra que el barco recogio un tesoro flotante. */
+    void showFloatingTreasureCollected(Ship ship, int goldGained, int hpRecovered);
+
+    /** Muestra la recompensa por hundir un barco. */
+    void showShipSunkReward(Ship ship, int goldGained, int goldRemaining);
+
+    /** Muestra el resultado de una reparacion manual. */
+    void showRepairResult(Ship ship, int hpRecovered, boolean inOwnPort, int woodSpent);
+
+    /** Muestra el resultado de comprar un puerto. */
+    void showPortPurchased(Ship ship, int goldSpent, int goldRemaining);
+
+    /** Muestra el resultado de apagar un incendio. */
+    void showFireExtinguished(Ship ship, boolean inOwnPort, int woodSpent);
+
+    /** Confirma la rendicion antes de ejecutarla. */
+    boolean confirmSurrender(Player player);
+
+    /** Muestra que la rendicion fue confirmada. */
+    void showSurrenderConfirmed(Player player);
+
+    /** Muestra reparaciones automaticas de fin de turno en puerto propio. */
+    void showEndTurnPortRepair(Ship ship, int hpRecovered);
+
+    /** Muestra el daño de incendio aplicado al finalizar el turno. */
+    void showEndTurnFireDamage(Ship ship, int hpLost, int hpRemaining);
+
+    /** Muestra que un efecto temporal expiro. */
+    void showEffectExpired(Ship ship, EffectType effectType);
+
+    /** Muestra por que un barco no puede ejecutar una accion. */
+    void showActionUnavailable(Ship ship, ShipAction action, String reason);
 
     // -------------------------------------------------------------------------
     // Eventos
