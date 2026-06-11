@@ -1,54 +1,62 @@
 @startuml
+skinparam ClassBackgroundColor #F9F9F9
+skinparam ClassBorderColor #333333
 
-' Referencias a elementos modelados en otros diagramas
 class GameState
-class Ship
-class CombatSystem
 class Player
 
-interface ShipCommand {
-    + canExecute(gameState: GameState): boolean
-    + execute(gameState: GameState)
-}
-class AttackCommand
-class RepairCommand
-
 interface GameEvent {
+    + getName(): String
     + apply(gameState: GameState): EventResult
+    + getDurationInTurns(): int
 }
-class Kraken
+
+class Squall
 class Mutiny
+class FloatingTreasureEvent
+class FavorableWind
+class DeckFire
 
 class EventManager {
+    - {static} instance: EventManager
+    + {static} getInstance(): EventManager
     + checkAndGetEvent(gameState: GameState): GameEvent
+    + addEvent(event: GameEvent)
 }
+
 class EventResult {
+    - eventName: String
     - consequences: List<String>
+    - affectedEntities: List<String>
 }
 
 interface VictoryStrategy {
     + check(state: GameState): Player
+    + getConditionType(): VictoryCondition
 }
+
 class FlagshipSunkStrategy
 class TreasureInPortStrategy
+class SurrenderStrategy
 
-' Realizaciones explícitas
-ShipCommand <|.. AttackCommand
-ShipCommand <|.. RepairCommand
+enum VictoryCondition {
+    FLAGSHIP_SUNK
+    TREASURE_CAPTURED
+    SURRENDER
+}
 
-GameEvent <|.. Kraken
+GameEvent <|.. Squall
 GameEvent <|.. Mutiny
+GameEvent <|.. FloatingTreasureEvent
+GameEvent <|.. FavorableWind
+GameEvent <|.. DeckFire
 
 VictoryStrategy <|.. FlagshipSunkStrategy
 VictoryStrategy <|.. TreasureInPortStrategy
-
-' Relaciones
-AttackCommand --> "1" Ship
-AttackCommand --> "1" CombatSystem
+VictoryStrategy <|.. SurrenderStrategy
 
 EventManager "1" o--> "*" GameEvent
-GameEvent ..> EventResult
-
+GameEvent ..> EventResult : retorna
 GameState "1" o--> "*" VictoryStrategy
-
+VictoryStrategy ..> VictoryCondition
 @enduml

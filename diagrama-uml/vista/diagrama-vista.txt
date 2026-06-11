@@ -1,40 +1,49 @@
 @startuml
+skinparam ClassBackgroundColor #F9F9F9
+skinparam ClassBorderColor #333333
 
-' Referencias a elementos modelados en otros diagramas
 class GameState
-class Board
-class AttackResult
-class EventResult
 class GameController
+class Board
 
 class Main {
     + {static} main(args: String[])
 }
 
 class GameLoader {
-    - resourcesBasePath: String
     + loadGame(mapFile: String, fleetFile: String): GameState
+    + getAvailableMaps(): List<String>
+    + getAvailableFleets(): List<String>
 }
 
 class GameConfig {
-    + {static} DEFAULT_BOARD_ROWS: int
-    + {static} DEFAULT_BOARD_COLS: int
+    + {static} REEF_DAMAGE: int
+    + {static} PORT_REPAIR_AMOUNT: int
+    + {static} INITIAL_GOLD: int
+    + {static} INITIAL_WOOD: int
 }
 
 interface GameView {
     + showBoard(state: GameState)
     + showTurnSummary(state: GameState)
     + showAttackResult(result: AttackResult)
-    + showEventResult(result: EventResult)
-    + promptShipAction(): ShipAction
+    + showMoveResult(ship: Ship, origin: Position, dest: Position)
+    + showActionUnavailable(ship: Ship, action: ShipAction, reason: String)
+    + showEndTurnFireDamage(ship: Ship, hpLost: int, remaining: int)
+    + showEndTurnPortRepair(ship: Ship, hp: int)
+    + confirmSurrender(player: Player): boolean
+    + askMapFile(): String
+    + askDestination(reachable: Set<Position>): Position
+    + askTarget(targets: List<Ship>): Ship
 }
 
 class ConsoleView {
     - scanner: Scanner
+    - boardRenderer: BoardRenderer
 }
 
 class BoardRenderer {
-    + render(board: Board): String
+    + render(gameState: GameState): String
 }
 
 enum ShipAction {
@@ -43,24 +52,19 @@ enum ShipAction {
     REPAIR
     BUY_PORT
     EXTINGUISH_FIRE
+    CANCEL
 }
 
-' Realizaciones explícitas
 GameView <|.. ConsoleView
 
-' Relaciones de Inicialización
 Main ..> GameLoader : instancia
 Main ..> ConsoleView : instancia
 Main ..> GameController : ensambla
 GameLoader ..> GameState : construye
 
-' Relaciones del Controlador
 GameController --> "1" GameView
-
-' Relaciones de la Vista
-ConsoleView ..> BoardRenderer : usa
+ConsoleView --> "1" BoardRenderer
 ConsoleView ..> ShipAction : retorna
-GameView ..> GameState : lee para mostrar
-BoardRenderer ..> Board : lee para dibujar ASCII
-
+GameView ..> GameState : lee
+BoardRenderer ..> Board : lee
 @enduml

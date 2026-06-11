@@ -6,22 +6,34 @@ class GameState {
     - turnNumber: int
     + switchTurn()
     + isGameOver(): boolean
+    + checkVictoryConditions()
+    + getOpponentOf(player: Player): Player
 }
 
 class Board {
     - rows: int
     - cols: int
     + getCellAt(pos: Position): Cell
+    + getReachablePositions(origin: Position, mov: int): Set<Position>
+    + moveShip(ship: Ship, dest: Position)
+    + sinkShip(ship: Ship)
 }
 
 class Cell {
-    + isOccupied(): boolean
-    + assignPortOwner(player: Player)
+    - baseTerrain: TerrainType
+    - climateEffectDuration: int
+    + isNavigable(): boolean
+    + isOwnedPortOf(player: Player): boolean
+    + placeShip(ship: Ship)
+    + placeTreasure(treasure: Treasure)
+    + applyTemporalClimate(climate: TerrainType, duration: int)
 }
 
 class Position {
     - row: int
     - col: int
+    + distanceTo(other: Position): int
+    + translate(dir: Direction): Position
 }
 
 enum TerrainType {
@@ -29,15 +41,18 @@ enum TerrainType {
     STORM
     PORT
     FOG
+    REEF
+    MARINE_CURRENT
+    ISLAND
 }
 
 class Player {
-    - name: String
     - surrendered: boolean
+    + getActiveFleet(): List<Ship>
+    + getFlagship(): Flagship
+    + isFlagshipSunk(): boolean
+    + surrender()
 }
-
-' Referencias a elementos modelados en otros diagramas
-class Ship
 
 enum Faction {
     CRIMSON_BROTHERHOOD
@@ -47,20 +62,38 @@ enum Faction {
 class ResourcePool {
     - gold: int
     - wood: int
+    + spendGold(amount: int)
+    + earnGold(amount: int)
+    + applyCostIncrease(multiplier: double, turns: int)
 }
 
-' Relaciones
+class MovementResolver {
+    + resolveMovement(gameState: GameState, ship: Ship, dest: Position)
+}
+
+class CellInteractionResolver {
+    + resolveEntry(cell: Cell, ship: Ship, player: Player)
+}
+
+class PortService {
+    + isShipInCurrentPlayerPort(gameState: GameState, ship: Ship): boolean
+    + applyEndTurnRepairIfDocked(board: Board, ship: Ship, player: Player)
+}
+
+class TurnProcessor {
+    + processEndOfTurn(gameState: GameState)
+}
+
+class Ship
+
 GameState "1" --> "1" Board
 GameState "1" o--> "*" Player
-
 Board "1" *--> "*" Cell
 Cell --> "1" TerrainType
 Cell --> "0..1" Player
-
 Player --> "1" Faction
 Player "1" *--> "1" ResourcePool
-Player --> "0..1" Position
-
 Player "1" o--> "*" Ship
-
+MovementResolver --> "1" CellInteractionResolver
+TurnProcessor --> "1" PortService
 @enduml

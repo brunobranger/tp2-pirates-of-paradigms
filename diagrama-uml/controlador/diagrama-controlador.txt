@@ -2,18 +2,15 @@
 skinparam ClassBackgroundColor #F9F9F9
 skinparam ClassBorderColor #333333
 
-' Referencias a elementos modelados en otros diagramas
 class GameState
-class Ship
 class CombatSystem
-class Position
+class EventManager
+class MovementResolver
+class PortService
 interface GameView
 
 class GameController {
-    - view: GameView
-    - state: GameState
-    + startGameLoop()
-    - handlePlayerTurn()
+    + start()
 }
 
 interface ShipCommand {
@@ -22,35 +19,28 @@ interface ShipCommand {
 }
 
 class MoveCommand
-class AttackCommand
+class AttackCommand {
+    + getLastResult(): AttackResult
+}
 class RepairCommand
 class BuyPortCommand
 class ExtinguishFireCommand
 
-' Realizaciones explícitas
 ShipCommand <|.. MoveCommand
 ShipCommand <|.. AttackCommand
 ShipCommand <|.. RepairCommand
 ShipCommand <|.. BuyPortCommand
 ShipCommand <|.. ExtinguishFireCommand
 
-' Relaciones principales del controlador
-GameController "1" --> "1" GameView
-GameController "1" --> "1" GameState
+GameController --> "1" GameView
+GameController --> "1" GameState
+GameController --> "1" CombatSystem
+GameController --> "1" EventManager
+GameController ..> ShipCommand : crea y ejecuta
 
-' El controlador usa los comandos de forma polimórfica
-GameController ..> ShipCommand : ejecuta
-
-' Relaciones estructurales (estado encapsulado por los comandos)
-MoveCommand --> "1" Ship
-MoveCommand --> "1" Position
-
-AttackCommand --> "1" Ship
-AttackCommand --> "1" Ship
+MoveCommand --> "1" MovementResolver
 AttackCommand --> "1" CombatSystem
-
-RepairCommand --> "1" Ship
-BuyPortCommand --> "1" Ship
-ExtinguishFireCommand --> "1" Ship
-
+RepairCommand --> "1" PortService
+BuyPortCommand --> "1" PortService
+ExtinguishFireCommand --> "1" PortService
 @enduml

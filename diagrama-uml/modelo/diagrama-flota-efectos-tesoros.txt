@@ -1,6 +1,7 @@
 @startuml
+skinparam ClassBackgroundColor #F9F9F9
+skinparam ClassBorderColor #333333
 
-' Referencias a elementos modelados en otros diagramas
 class Player
 class Cell
 class Board
@@ -8,9 +9,18 @@ class Board
 abstract class Ship {
     - name: String
     - currentHp: int
+    - maxHp: int
     + receiveDamage(damage: int): int
-    + addEffect(effect: ShipEffect)
+    + canMove(): boolean
+    + canAttack(): boolean
+    + getEffectiveMovement(): int
+    + getEffectiveAttack(): int
+    + getEffectiveRange(): int
+    + isAgile(): boolean
+    + isOnFire(): boolean
+    + isCarryingTreasure(): boolean
 }
+
 class Flagship
 class Galleon
 class Frigate
@@ -19,20 +29,41 @@ class Sloop
 interface ShipEffect {
     + tick()
     + isExpired(): boolean
+    + modifyMovement(base: int): int
+    + modifyAttack(base: int): int
+    + preventsAttack(): boolean
+    + preventsMovement(): boolean
 }
+
 class FireEffect
 class ImmobilizedEffect
+class ReducedMovementEffect
+class ReducedAttackEffect
+class LostActionEffect
+class FavorableWindEffect
+
+interface Treasure {
+    + getType(): TreasureType
+    + onPickUp(ship: Ship, player: Player)
+}
 
 class DynasticTreasure {
     - isFloating: boolean
+    + isCarried(): boolean
+    + isCaptured(): boolean
+    + dropForSink(position: Position)
+    + deliver(portPosition: Position)
 }
 
 class FloatingTreasure {
-    - amountGold: int
+    - turnsUntilDisappear: int
+    + tick()
+    + isGone(): boolean
 }
 
 class CombatSystem {
     + attack(attacker: Ship, defender: Ship): AttackResult
+    + isInRange(attacker: Ship, defender: Ship): boolean
 }
 
 class AttackResult {
@@ -40,25 +71,27 @@ class AttackResult {
     - defenderSunk: boolean
 }
 
-' Herencias y realizaciones explícitas
 Ship <|-- Flagship
 Ship <|-- Galleon
 Ship <|-- Frigate
 Ship <|-- Sloop
 
+Treasure <|.. DynasticTreasure
+Treasure <|.. FloatingTreasure
+
 ShipEffect <|.. FireEffect
 ShipEffect <|.. ImmobilizedEffect
+ShipEffect <|.. ReducedMovementEffect
+ShipEffect <|.. ReducedAttackEffect
+ShipEffect <|.. LostActionEffect
+ShipEffect <|.. FavorableWindEffect
 
-' Relaciones
 Player "1" o--> "*" Ship
 Ship "1" o--> "*" ShipEffect
-
-DynasticTreasure --> "0..1" Ship
-Cell --> "0..1" Ship
-Cell --> "0..1" DynasticTreasure
-
+Ship --> "0..1" DynasticTreasure : carries
+Cell --> "0..1" Treasure
+DynasticTreasure --> "1" Player : owner
 CombatSystem --> "1" Board
 AttackResult --> "1" Ship : attacker
 AttackResult --> "1" Ship : defender
-
 @enduml
