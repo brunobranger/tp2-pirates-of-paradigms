@@ -16,4 +16,7 @@ public class Flagship extends Ship {
     public ShipType getType() {
         return ShipType.FLAGSHIP;
     }
+
+    @Override
+    public boolean isFlagship() { return true; }
 }
