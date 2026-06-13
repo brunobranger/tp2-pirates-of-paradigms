@@ -274,11 +274,11 @@ public class GameController {
             return;
         }
 
-        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        int goldBefore = gameState.getCurrentPlayer().getGold();
         command.execute(gameState);
         view.showAttackResult(command.getLastResult());
         if (command.getLastResult().isDefenderSunk()) {
-            int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+            int goldAfter = gameState.getCurrentPlayer().getGold();
             view.showShipSunkReward(target, goldAfter - goldBefore, goldAfter);
         }
     }
@@ -295,9 +295,9 @@ public class GameController {
 
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
         int hpBefore = ship.getCurrentHp();
-        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        int woodBefore = gameState.getCurrentPlayer().getWood();
         command.execute(gameState);
-        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getWood();
         view.showRepairResult(ship, ship.getCurrentHp() - hpBefore, inOwnPort, woodSpent);
     }
 
@@ -311,9 +311,9 @@ public class GameController {
             return;
         }
 
-        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        int goldBefore = gameState.getCurrentPlayer().getGold();
         command.execute(gameState);
-        int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+        int goldAfter = gameState.getCurrentPlayer().getGold();
         view.showPortPurchased(ship, goldBefore - goldAfter, goldAfter);
     }
 
@@ -328,9 +328,9 @@ public class GameController {
         }
 
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
-        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        int woodBefore = gameState.getCurrentPlayer().getWood();
         command.execute(gameState);
-        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getWood();
         view.showFireExtinguished(ship, inOwnPort, woodSpent);
     }
 
@@ -347,7 +347,7 @@ public class GameController {
                 destinationCell.getTerrain(),
                 destinationCell.getTreasure(),
                 ship.getCurrentHp(),
-                gameState.getCurrentPlayer().getResources().getGold()
+                gameState.getCurrentPlayer().getGold()
         );
     }
 
@@ -356,7 +356,7 @@ public class GameController {
         view.showMoveResult(ship, before.origin(), before.destination());
 
         if (before.destinationTreasure() != null) {
-            int goldGained = gameState.getCurrentPlayer().getResources().getGold() - before.goldBefore();
+            int goldGained = gameState.getCurrentPlayer().getGold() - before.goldBefore();
             before.destinationTreasure().reportCollection(
                     treasureCollectionReporter,
                     ship,
@@ -465,8 +465,7 @@ public class GameController {
     private String describeRepairBlocker(Ship ship) {
         if (ship.isSunk()) return "está hundido";
         if (!portService.isShipInCurrentPlayerPort(gameState, ship)
-                && !gameState.getCurrentPlayer().getResources()
-                        .hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
+                && !gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
             return "no está en un puerto propio y no tiene madera suficiente";
         }
         return "no cumple las condiciones para repararse";
@@ -476,7 +475,7 @@ public class GameController {
         if (!portService.isUnownedPortAtShipPosition(gameState, ship)) {
             return "no está sobre un puerto neutral";
         }
-        if (!gameState.getCurrentPlayer().getResources().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
+        if (!gameState.getCurrentPlayer().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
             return "no tiene oro suficiente";
         }
         return "no cumple las condiciones para comprar puerto";
@@ -485,8 +484,7 @@ public class GameController {
     private String describeExtinguishBlocker(Ship ship) {
         if (!ship.isOnFire()) return "no tiene incendio activo";
         if (!portService.isShipInCurrentPlayerPort(gameState, ship)
-                && !gameState.getCurrentPlayer().getResources()
-                        .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
+                && !gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
             return "no está en un puerto propio y no tiene madera suficiente";
         }
         return "no cumple las condiciones para apagar el incendio";

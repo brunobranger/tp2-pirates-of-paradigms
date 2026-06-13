@@ -167,7 +167,7 @@ public class ConsoleView implements GameView {
         int playerNumber = getPlayerNumber(current, gameState);
         out.println("Turno " + gameState.getTurnNumber()
                 + " | Jugador " + playerNumber + " - " + current.getFaction()
-                + " | " + current.getResources());
+                + " | " + current.describeResources());
     }
 
     @Override
@@ -176,7 +176,7 @@ public class ConsoleView implements GameView {
         showTurnSummary(gameState);
         for (Player player : gameState.getPlayers()) {
             out.println();
-            out.println("Jugador " + getPlayerNumber(player, gameState) + " - " + player.getFaction() + " | Recursos: " + player.getResources());
+            out.println("Jugador " + getPlayerNumber(player, gameState) + " - " + player.getFaction() + " | Recursos: " + player.describeResources());
             out.println("Puerto inicial: " + displayPosition(player.getHomePortPosition()));
             out.println("Flota:");
             if (player.getActiveFleet().isEmpty()) {

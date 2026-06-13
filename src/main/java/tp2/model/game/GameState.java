@@ -215,7 +215,7 @@ public class GameState {
     }
 
     public void applyCostIncreaseToCurrentPlayer(double costMultiplier, int duration){
-        this.getCurrentPlayer().getResources().applyCostIncrease(costMultiplier, duration);
+        this.getCurrentPlayer().applyCostIncrease(costMultiplier, duration);
     }
 
     public void applyEffectToAllAgileShips(ShipEffect effect){
