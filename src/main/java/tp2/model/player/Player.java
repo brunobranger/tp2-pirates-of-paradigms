@@ -101,10 +101,10 @@ public class Player {
      * @return el barco insignia del jugador
      * @throws IllegalStateException si no se encuentra (nunca debería ocurrir al inicio)
      */
-    public Flagship getFlagship() {
+    public Ship getFlagship() {
         for (Ship ship : fleet) {
-            if (ship.getType() == ShipType.FLAGSHIP) {
-                return (Flagship) ship;
+            if (ship.isFlagship()) {
+                return ship;
             }
         }
         return null;
@@ -115,7 +115,7 @@ public class Player {
      * @return true si el barco insignia fue hundido
      */
     public boolean isFlagshipSunk() {
-        Flagship flagship = getFlagship();
+        Ship flagship = getFlagship();
 
         if (flagship == null) {
             return true;
