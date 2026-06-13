@@ -53,6 +53,11 @@ public class FireEffect implements ShipEffect {
         ship.receiveDamage(damagePerTurn);
     }
 
+    @Override
+    public int calculateEndOfTurnDamage(Ship ship) {
+        return Math.max(0, damagePerTurn - ship.getDef());
+    }
+
     public int getDamagePerTurn() {
         return damagePerTurn;
     }

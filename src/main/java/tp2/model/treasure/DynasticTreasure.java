@@ -35,6 +35,12 @@ public class DynasticTreasure implements Treasure{
         pickUp(ship);
     }
 
+    @Override
+    public void reportCollection(TreasureCollectionReporter reporter, Ship ship,
+                                 int goldGained, int hpRecovered) {
+        reporter.reportDynasticTreasureCollected(ship, owner);
+    }
+
     // -------------------------------------------------------------------------
     // Estado
     // -------------------------------------------------------------------------

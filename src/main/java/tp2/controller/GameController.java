@@ -20,11 +20,9 @@ import tp2.model.player.Player;
 import tp2.model.resource.ResourceCosts;
 import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
-import tp2.model.ship.effect.FireEffect;
 import tp2.model.ship.effect.ShipEffect;
-import tp2.model.treasure.DynasticTreasure;
-import tp2.model.treasure.FloatingTreasure;
 import tp2.model.treasure.Treasure;
+import tp2.model.treasure.TreasureCollectionReporter;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
@@ -57,6 +55,7 @@ public class GameController {
     private final MovementResolver movementResolver;
     private final TurnProcessor turnProcessor;
     private final PortService portService;
+    private final TreasureCollectionReporter treasureCollectionReporter;
 
     public GameController(GameState gameState, GameView view,
                           CombatSystem combatSystem, EventManager eventManager) {
@@ -68,6 +67,7 @@ public class GameController {
         this.movementResolver = new MovementResolver(new CellInteractionResolver(TerrainRegistry.defaultRegistry()));
         this.turnProcessor = new TurnProcessor(defaultPortService);
         this.portService = defaultPortService;
+        this.treasureCollectionReporter = createTreasureCollectionReporter();
     }
 
     public GameController(GameState gameState, GameView view,
@@ -81,6 +81,21 @@ public class GameController {
         this.movementResolver = movementResolver;
         this.turnProcessor = turnProcessor;
         this.portService = portService;
+        this.treasureCollectionReporter = createTreasureCollectionReporter();
+    }
+
+    private TreasureCollectionReporter createTreasureCollectionReporter() {
+        return new TreasureCollectionReporter() {
+            @Override
+            public void reportDynasticTreasureCollected(Ship ship, Player owner) {
+                view.showDynasticTreasureCollected(ship, owner);
+            }
+
+            @Override
+            public void reportFloatingTreasureCollected(Ship ship, int goldGained, int hpRecovered) {
+                view.showFloatingTreasureCollected(ship, goldGained, hpRecovered);
+            }
+        };
     }
 
     // -------------------------------------------------------------------------
@@ -340,11 +355,14 @@ public class GameController {
         Ship ship = before.ship();
         view.showMoveResult(ship, before.origin(), before.destination());
 
-        if (before.destinationTreasure() instanceof DynasticTreasure treasure) {
-            view.showDynasticTreasureCollected(ship, treasure.getOwner());
-        } else if (before.destinationTreasure() instanceof FloatingTreasure) {
+        if (before.destinationTreasure() != null) {
             int goldGained = gameState.getCurrentPlayer().getResources().getGold() - before.goldBefore();
-            view.showFloatingTreasureCollected(ship, goldGained, calculateFloatingTreasureRepair(before));
+            before.destinationTreasure().reportCollection(
+                    treasureCollectionReporter,
+                    ship,
+                    goldGained,
+                    calculateTreasureRepair(before)
+            );
         }
 
         if (before.destinationTerrain() == TerrainType.REEF) {
@@ -361,15 +379,16 @@ public class GameController {
         }
     }
 
-    private int calculateFloatingTreasureRepair(MoveSnapshot before) {
-        return Math.min(ResourceCosts.FLOATING_TREASURE_HP_REPAIR,
-                before.ship().getMaxHp() - before.hpBefore());
+    private int calculateTreasureRepair(MoveSnapshot before) {
+        if (before.destinationTreasure() == null) {
+            return 0;
+        }
+        return before.destinationTreasure()
+                .calculateHpRepairOnPickUp(before.ship(), before.hpBefore());
     }
 
     private int calculateReefDamage(MoveSnapshot before) {
-        int hpBeforeReef = before.hpBefore() + (before.destinationTreasure() instanceof FloatingTreasure
-                ? calculateFloatingTreasureRepair(before)
-                : 0);
+        int hpBeforeReef = before.hpBefore() + calculateTreasureRepair(before);
         int effectiveDamage = Math.max(0, GameConfig.REEF_DAMAGE - before.ship().getDef());
         return Math.min(hpBeforeReef, effectiveDamage);
     }
@@ -414,10 +433,7 @@ public class GameController {
     private int calculateFireDamage(Ship ship) {
         int hpRemaining = ship.getCurrentHp();
         for (ShipEffect effect : ship.getActiveEffects()) {
-            if (effect instanceof FireEffect fireEffect) {
-                int damage = Math.max(0, fireEffect.getDamagePerTurn() - ship.getDef());
-                hpRemaining = Math.max(0, hpRemaining - damage);
-            }
+            hpRemaining = Math.max(0, hpRemaining - effect.calculateEndOfTurnDamage(ship));
         }
         return ship.getCurrentHp() - hpRemaining;
     }
