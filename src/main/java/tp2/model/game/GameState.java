@@ -161,6 +161,18 @@ public class GameState {
     }
 
     /**
+     * Aplica daño a todos los barcos presentes.
+     * @param damage daño a aplicar
+     */
+    public void applyDamageToAllShips(int damage){
+        for(Player player : this.getPlayers()) {
+            for (Ship ship : player.getActiveFleet()) {
+                ship.receiveDamage(damage);
+            }
+        }
+    }
+
+    /**
      * Aplica daño a los barcos en un área del tablero.
      * @param area lista de posiciones donde se aplicará el daño
      * @param damage daño a aplicar
@@ -174,6 +186,7 @@ public class GameState {
             if (!board.isWithinBounds(pos)) {
                 continue;
             }
+
             Ship ship = board.getShipAt(pos);
             if (ship != null) {
                 ship.receivePureDamage(damage);
