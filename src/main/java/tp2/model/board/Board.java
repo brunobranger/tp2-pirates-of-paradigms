@@ -155,6 +155,10 @@ public class Board {
     // Eventos
     // -------------------------------------------------------------------------
 
+    public void setTemporalTerrain(Position position, TerrainType terrain, int duration){
+        this.getCellAt(position).setTemporalTerrain(terrain, duration);
+    }
+
     /**
      * Aplica un clima temporal en un área central del tablero con un tamaño definido por el factor
      * areaPercent relativo al tamaño del mismo.
@@ -180,7 +184,7 @@ public class Board {
         for (int row = initRow; row <= endRow; row++) {
             for (int col = initCol; col <= endCol; col++) {
                 Position position = new Position(row, col);
-                this.getCellAt(position).applyTemporalClimate(climate, duration);
+                this.setTemporalTerrain(position, climate, duration);
                 affectedPositions.add(position);
             }
         }
@@ -191,10 +195,10 @@ public class Board {
     /**
      * Actualiza los efectos de clima en todas las celdas del tablero
      */
-    public void updateClimateEffect(){
+    public void updateTemporalTerrains(){
         for(int row = 0; row < this.rows; row++)
             for(int col = 0; col < this.cols; col++)
-                this.getCellAt(new Position(row, col)).decrementClimateDuration();
+                this.getCellAt(new Position(row, col)).decrementTemporalTerrainDuration();
     }
 
     // -------------------------------------------------------------------------

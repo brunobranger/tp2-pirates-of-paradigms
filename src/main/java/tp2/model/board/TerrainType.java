@@ -31,5 +31,11 @@ public enum TerrainType {
     MARINE_CURRENT,
 
     /** Intransitable. Ningún barco puede ingresar. */
-    ISLAND
+    ISLAND,
+
+    /** Celda ocupada por Kraken, intransitable. */
+    KRAKEN,
+
+    /** Celdas bloqueada por efecto del Kraken, intransitable. */
+    KRAKEN_BLOCKED_CELL
 }

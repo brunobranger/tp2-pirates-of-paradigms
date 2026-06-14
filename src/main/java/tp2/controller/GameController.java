@@ -165,7 +165,7 @@ public class GameController {
             portService.placeInitialPort(board, player, portPos);
 
             for (Ship ship : player.getActiveFleet()) {
-                if (!ship.getType().equals(FLAGSHIP)) {
+                if (!ship.isFlagship()) {
                     Set<Position> validPositionsForShip = new HashSet<>(board.getPositionsMatching(true));
                     Position shipPos = view.askShipPlacementPosition(player, ship, validPositionsForShip, gameState);
                     portService.placeInitialShip(board, ship, shipPos);

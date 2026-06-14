@@ -12,8 +12,8 @@ public class Cell {
     private final Position position;
     private TerrainType baseTerrain;
     private TerrainType currentTerrain;
-    private int climateEffectDuration = 0;
-    private TerrainType climateOverride = null;
+    private int currentTerrainDuration = 0;
+    private TerrainType terrainOverride = null;
     private Ship occupant;
     private Treasure treasure;
     private Player portOwner;
@@ -33,7 +33,11 @@ public class Cell {
      * @return true si la casilla puede ser ocupada por un barco (no es isla, no está ya ocupada).
      */
     public boolean isNavigable() {
-        return this.baseTerrain != TerrainType.ISLAND && this.occupant == null;
+
+        return this.baseTerrain != TerrainType.ISLAND &&
+                this.currentTerrain != TerrainType.KRAKEN &&
+                this.currentTerrain != TerrainType.KRAKEN_BLOCKED_CELL &&
+                this.occupant == null;
     }
 
     /**
@@ -82,8 +86,13 @@ public class Cell {
      * @throws IllegalStateException si la casilla ya está ocupada
      */
     public void placeShip(Ship ship) {
-        if (this.isOccupied()) throw new IllegalStateException("The cell is already occupied.");
-        if (this.baseTerrain == TerrainType.ISLAND) throw new IllegalStateException("Cannot place a ship on an island terrain.");
+        if (this.isOccupied())
+            throw new IllegalStateException("La celda está ocupada");
+        if (this.baseTerrain == TerrainType.ISLAND ||
+                this.currentTerrain == TerrainType.KRAKEN ||
+                this.currentTerrain == TerrainType.KRAKEN_BLOCKED_CELL)
+            throw new IllegalStateException("No se puede ubicar el barco en esa posición");
+
         this.occupant = ship;
         ship.setPosition(this.position);
     }
@@ -102,7 +111,7 @@ public class Cell {
      * @throws IllegalStateException si no es una casilla de tipo PORT
      */
     public void assignPortOwner(Player player) {
-        if (baseTerrain != TerrainType.PORT) throw new IllegalStateException("The terrain is not a PORT");
+        if (baseTerrain != TerrainType.PORT) throw new IllegalStateException("El terreno no es un puerto");
         this.portOwner = player;
     }
 
@@ -138,32 +147,36 @@ public class Cell {
     }
 
     /**
-     * Cambia el tipo de terreno (usado por eventos como Vendaval que convierte
-     * casillas en tormenta temporalmente).
+     * Setea el tipo de terreno
      *
-     * @param newTerrain nuevo tipo de terreno
+     * @param newTerrain tipo de terreno
      */
     public void setTerrain(TerrainType newTerrain) {
         this.baseTerrain = newTerrain;
         this.currentTerrain = newTerrain;
     }
 
-    public void applyTemporalClimate(TerrainType climate, int duration) {
-        if(climate != TerrainType.STORM && climate != TerrainType.FOG && climate != TerrainType.MARINE_CURRENT)
-            throw new IllegalArgumentException("El tipo de terreno recibido no es un clima");
-        this.climateOverride = climate;
-        this.climateEffectDuration = duration;
-        this.currentTerrain = climate;
+    /**
+     * Asigna un terreno temporal, usado para efectos de clima y eventos
+     *
+     * @param terrain tipo de terreno
+     * @param duration duración en turnos
+     */
+    public void setTemporalTerrain(TerrainType terrain, int duration){
+        this.terrainOverride = terrain;
+        this.currentTerrainDuration = duration;
+        this.currentTerrain = terrain;
     }
 
     /**
-     * Se debe llamar al pasar el turno. Si el efecto expira, vuelve al estado base.
+     * Decrementa la duración del terreno temporal, se debe llamar al pasar el turno.
+     * Si el contador expira, vuelve al terreno base.
      */
-    public void decrementClimateDuration() {
-        if (this.climateOverride != null && climateEffectDuration > 0) {
-            climateEffectDuration--;
-            if (climateEffectDuration == 0) {
-                this.climateOverride = null;
+    public void decrementTemporalTerrainDuration() {
+        if (this.terrainOverride != null && currentTerrainDuration > 0) {
+            currentTerrainDuration--;
+            if (currentTerrainDuration == 0) {
+                this.terrainOverride = null;
                 this.currentTerrain = this.baseTerrain;
             }
         }

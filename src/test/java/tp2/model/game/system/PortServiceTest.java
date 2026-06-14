@@ -70,7 +70,7 @@ class PortServiceTest {
         PortService service = new PortService();
         service.placeInitialPort(board, player, new Position(0, 0));
 
-        flagship.receiveDamage(9999);
+        flagship.receiveAttackDamage(9999);
         int before = flagship.getCurrentHp();
 
         assertTrue(board.getCellAt(flagship.getPosition()).isOwnedPortOf(player));
