@@ -20,19 +20,16 @@ public class RepairCommand implements ShipCommand {
     public boolean canExecute(GameState gameState) {
         if (ship.isSunk()) return false;
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
-        boolean hasWood = gameState.getCurrentPlayer().getResources()
-                .hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD);
+        boolean hasWood = gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD);
         return inOwnPort || hasWood;
     }
 
     @Override
     public void execute(GameState gameState) {
-        var resources = gameState.getCurrentPlayer().getResources();
-
         if (portService.isShipInCurrentPlayerPort(gameState, ship)) {
             ship.repairHp(GameConfig.REPAIR_IN_PORT_HP);
         } else {
-            resources.spendWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD);
+            gameState.getCurrentPlayer().spendWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD);
             ship.repairHp(GameConfig.REPAIR_OUT_PORT_HP);
         }
     }

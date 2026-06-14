@@ -33,6 +33,18 @@ public class FloatingTreasure implements Treasure{
     public void onPickUp(Ship ship, Player player){
         player.addGold(FLOATING_TREASURE_GOLD);
         ship.repairHp(FLOATING_TREASURE_HP_REPAIR);
+        claim();
+    }
+
+    @Override
+    public int calculateHpRepairOnPickUp(Ship ship, int hpBeforePickUp) {
+        return Math.min(FLOATING_TREASURE_HP_REPAIR, ship.getMaxHp() - hpBeforePickUp);
+    }
+
+    @Override
+    public void reportCollection(TreasureCollectionReporter reporter, Ship ship,
+                                 int goldGained, int hpRecovered) {
+        reporter.reportFloatingTreasureCollected(ship, goldGained, hpRecovered);
     }
 
     // -------------------------------------------------------------------------
@@ -48,7 +60,6 @@ public class FloatingTreasure implements Treasure{
 
     /**
      * Marca el tesoro como reclamado por un barco.
-     * Las recompensas las aplica el GameController (SRP).
      */
     public void claim() {
         setClaimed();
@@ -92,7 +103,7 @@ public class FloatingTreasure implements Treasure{
      * Establece el estado del tesoro flotante en verdadero.
      */
     private void setClaimed() {
-        this.claimed = !isClaimed();
+        this.claimed = true;
     }
 
     /**

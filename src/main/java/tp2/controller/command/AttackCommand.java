@@ -33,8 +33,7 @@ public class AttackCommand implements ShipCommand {
             var opponent = gameState.getOpponentOf(gameState.getCurrentPlayer());
             opponent.removeShip(target);
             gameState.getBoard().sinkShip(target);
-            gameState.getCurrentPlayer().getResources()
-                    .earnGold(tp2.model.resource.ResourceCosts.SINK_SHIP_GOLD_REWARD);
+            gameState.getCurrentPlayer().addGold(tp2.model.resource.ResourceCosts.SINK_SHIP_GOLD_REWARD);
         }
 
         gameState.checkVictoryConditions();

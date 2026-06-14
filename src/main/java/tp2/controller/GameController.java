@@ -20,11 +20,9 @@ import tp2.model.player.Player;
 import tp2.model.resource.ResourceCosts;
 import tp2.model.ship.EffectType;
 import tp2.model.ship.Ship;
-import tp2.model.ship.effect.FireEffect;
 import tp2.model.ship.effect.ShipEffect;
-import tp2.model.treasure.DynasticTreasure;
-import tp2.model.treasure.FloatingTreasure;
 import tp2.model.treasure.Treasure;
+import tp2.model.treasure.TreasureCollectionReporter;
 import tp2.view.GameView;
 import tp2.view.ShipAction;
 
@@ -57,6 +55,7 @@ public class GameController {
     private final MovementResolver movementResolver;
     private final TurnProcessor turnProcessor;
     private final PortService portService;
+    private final TreasureCollectionReporter treasureCollectionReporter;
 
     public GameController(GameState gameState, GameView view,
                           CombatSystem combatSystem, EventManager eventManager) {
@@ -68,6 +67,7 @@ public class GameController {
         this.movementResolver = new MovementResolver(new CellInteractionResolver(TerrainRegistry.defaultRegistry()));
         this.turnProcessor = new TurnProcessor(defaultPortService);
         this.portService = defaultPortService;
+        this.treasureCollectionReporter = createTreasureCollectionReporter();
     }
 
     public GameController(GameState gameState, GameView view,
@@ -81,6 +81,21 @@ public class GameController {
         this.movementResolver = movementResolver;
         this.turnProcessor = turnProcessor;
         this.portService = portService;
+        this.treasureCollectionReporter = createTreasureCollectionReporter();
+    }
+
+    private TreasureCollectionReporter createTreasureCollectionReporter() {
+        return new TreasureCollectionReporter() {
+            @Override
+            public void reportDynasticTreasureCollected(Ship ship, Player owner) {
+                view.showDynasticTreasureCollected(ship, owner);
+            }
+
+            @Override
+            public void reportFloatingTreasureCollected(Ship ship, int goldGained, int hpRecovered) {
+                view.showFloatingTreasureCollected(ship, goldGained, hpRecovered);
+            }
+        };
     }
 
     // -------------------------------------------------------------------------
@@ -259,11 +274,11 @@ public class GameController {
             return;
         }
 
-        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        int goldBefore = gameState.getCurrentPlayer().getGold();
         command.execute(gameState);
         view.showAttackResult(command.getLastResult());
         if (command.getLastResult().isDefenderSunk()) {
-            int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+            int goldAfter = gameState.getCurrentPlayer().getGold();
             view.showShipSunkReward(target, goldAfter - goldBefore, goldAfter);
         }
     }
@@ -280,9 +295,9 @@ public class GameController {
 
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
         int hpBefore = ship.getCurrentHp();
-        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        int woodBefore = gameState.getCurrentPlayer().getWood();
         command.execute(gameState);
-        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getWood();
         view.showRepairResult(ship, ship.getCurrentHp() - hpBefore, inOwnPort, woodSpent);
     }
 
@@ -296,9 +311,9 @@ public class GameController {
             return;
         }
 
-        int goldBefore = gameState.getCurrentPlayer().getResources().getGold();
+        int goldBefore = gameState.getCurrentPlayer().getGold();
         command.execute(gameState);
-        int goldAfter = gameState.getCurrentPlayer().getResources().getGold();
+        int goldAfter = gameState.getCurrentPlayer().getGold();
         view.showPortPurchased(ship, goldBefore - goldAfter, goldAfter);
     }
 
@@ -313,9 +328,9 @@ public class GameController {
         }
 
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
-        int woodBefore = gameState.getCurrentPlayer().getResources().getWood();
+        int woodBefore = gameState.getCurrentPlayer().getWood();
         command.execute(gameState);
-        int woodSpent = woodBefore - gameState.getCurrentPlayer().getResources().getWood();
+        int woodSpent = woodBefore - gameState.getCurrentPlayer().getWood();
         view.showFireExtinguished(ship, inOwnPort, woodSpent);
     }
 
@@ -332,7 +347,7 @@ public class GameController {
                 destinationCell.getTerrain(),
                 destinationCell.getTreasure(),
                 ship.getCurrentHp(),
-                gameState.getCurrentPlayer().getResources().getGold()
+                gameState.getCurrentPlayer().getGold()
         );
     }
 
@@ -340,11 +355,14 @@ public class GameController {
         Ship ship = before.ship();
         view.showMoveResult(ship, before.origin(), before.destination());
 
-        if (before.destinationTreasure() instanceof DynasticTreasure treasure) {
-            view.showDynasticTreasureCollected(ship, treasure.getOwner());
-        } else if (before.destinationTreasure() instanceof FloatingTreasure) {
-            int goldGained = gameState.getCurrentPlayer().getResources().getGold() - before.goldBefore();
-            view.showFloatingTreasureCollected(ship, goldGained, calculateFloatingTreasureRepair(before));
+        if (before.destinationTreasure() != null) {
+            int goldGained = gameState.getCurrentPlayer().getGold() - before.goldBefore();
+            before.destinationTreasure().reportCollection(
+                    treasureCollectionReporter,
+                    ship,
+                    goldGained,
+                    calculateTreasureRepair(before)
+            );
         }
 
         if (before.destinationTerrain() == TerrainType.REEF) {
@@ -361,15 +379,16 @@ public class GameController {
         }
     }
 
-    private int calculateFloatingTreasureRepair(MoveSnapshot before) {
-        return Math.min(ResourceCosts.FLOATING_TREASURE_HP_REPAIR,
-                before.ship().getMaxHp() - before.hpBefore());
+    private int calculateTreasureRepair(MoveSnapshot before) {
+        if (before.destinationTreasure() == null) {
+            return 0;
+        }
+        return before.destinationTreasure()
+                .calculateHpRepairOnPickUp(before.ship(), before.hpBefore());
     }
 
     private int calculateReefDamage(MoveSnapshot before) {
-        int hpBeforeReef = before.hpBefore() + (before.destinationTreasure() instanceof FloatingTreasure
-                ? calculateFloatingTreasureRepair(before)
-                : 0);
+        int hpBeforeReef = before.hpBefore() + calculateTreasureRepair(before);
         int effectiveDamage = Math.max(0, GameConfig.REEF_DAMAGE - before.ship().getDef());
         return Math.min(hpBeforeReef, effectiveDamage);
     }
@@ -414,10 +433,7 @@ public class GameController {
     private int calculateFireDamage(Ship ship) {
         int hpRemaining = ship.getCurrentHp();
         for (ShipEffect effect : ship.getActiveEffects()) {
-            if (effect instanceof FireEffect fireEffect) {
-                int damage = Math.max(0, fireEffect.getDamagePerTurn() - ship.getDef());
-                hpRemaining = Math.max(0, hpRemaining - damage);
-            }
+            hpRemaining = Math.max(0, hpRemaining - effect.calculateEndOfTurnDamage(ship));
         }
         return ship.getCurrentHp() - hpRemaining;
     }
@@ -449,8 +465,7 @@ public class GameController {
     private String describeRepairBlocker(Ship ship) {
         if (ship.isSunk()) return "está hundido";
         if (!portService.isShipInCurrentPlayerPort(gameState, ship)
-                && !gameState.getCurrentPlayer().getResources()
-                        .hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
+                && !gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.REPAIR_OUT_OF_PORT_WOOD)) {
             return "no está en un puerto propio y no tiene madera suficiente";
         }
         return "no cumple las condiciones para repararse";
@@ -460,7 +475,7 @@ public class GameController {
         if (!portService.isUnownedPortAtShipPosition(gameState, ship)) {
             return "no está sobre un puerto neutral";
         }
-        if (!gameState.getCurrentPlayer().getResources().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
+        if (!gameState.getCurrentPlayer().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD)) {
             return "no tiene oro suficiente";
         }
         return "no cumple las condiciones para comprar puerto";
@@ -469,8 +484,7 @@ public class GameController {
     private String describeExtinguishBlocker(Ship ship) {
         if (!ship.isOnFire()) return "no tiene incendio activo";
         if (!portService.isShipInCurrentPlayerPort(gameState, ship)
-                && !gameState.getCurrentPlayer().getResources()
-                        .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
+                && !gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD)) {
             return "no está en un puerto propio y no tiene madera suficiente";
         }
         return "no cumple las condiciones para apagar el incendio";

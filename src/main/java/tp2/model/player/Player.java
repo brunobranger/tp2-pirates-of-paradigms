@@ -59,6 +59,37 @@ public class Player {
         this.resources.spendGold(gold);
     }
 
+    public void spendWood(int wood) {
+        if (wood < 0) {
+            throw new IllegalArgumentException("No se puede gastar madera negativa!");
+        }
+        this.resources.spendWood(wood);
+    }
+
+    public boolean hasEnoughGold(int gold) {
+        return this.resources.hasEnoughGold(gold);
+    }
+
+    public boolean hasEnoughWood(int wood) {
+        return this.resources.hasEnoughWood(wood);
+    }
+
+    public int getGold() {
+        return this.resources.getGold();
+    }
+
+    public int getWood() {
+        return this.resources.getWood();
+    }
+
+    public void applyCostIncrease(double multiplier, int turns) {
+        this.resources.applyCostIncrease(multiplier, turns);
+    }
+
+    public String describeResources() {
+        return this.resources.toString();
+    }
+
     // -------------------------------------------------------------------------
     // Flota
     // -------------------------------------------------------------------------
@@ -131,12 +162,6 @@ public class Player {
     public void resetFleetTurnState() {
         fleet.forEach(Ship :: resetTurnState);
     }
-
-    // -------------------------------------------------------------------------
-    // Recursos
-    // -------------------------------------------------------------------------
-
-    public ResourcePool getResources() { return resources; }
 
     // -------------------------------------------------------------------------
     // Estado de partida

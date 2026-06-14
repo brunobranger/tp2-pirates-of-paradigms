@@ -84,4 +84,14 @@ public interface ShipEffect {
      * @param ship barco afectado
      */
     default void applyEndOfTurnDamage(Ship ship) {}
+
+    /**
+     * Calcula cuanto daño efectivo aplicaria este efecto al finalizar el turno.
+     *
+     * @param ship barco afectado
+     * @return daño efectivo
+     */
+    default int calculateEndOfTurnDamage(Ship ship) {
+        return 0;
+    }
 }

@@ -19,8 +19,7 @@ public class ExtinguishFireCommand implements ShipCommand {
     public boolean canExecute(GameState gameState) {
         if (!ship.isOnFire()) return false;
         boolean inOwnPort = portService.isShipInCurrentPlayerPort(gameState, ship);
-        boolean hasWood = gameState.getCurrentPlayer().getResources()
-                .hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);
+        boolean hasWood = gameState.getCurrentPlayer().hasEnoughWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);
         return inOwnPort || hasWood;
     }
 
@@ -29,8 +28,7 @@ public class ExtinguishFireCommand implements ShipCommand {
         if (portService.isShipInCurrentPlayerPort(gameState, ship)) {
             ship.extinguishFire();
         } else {
-            gameState.getCurrentPlayer().getResources()
-                    .spendWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);
+            gameState.getCurrentPlayer().spendWood(ResourceCosts.EXTINGUISH_FIRE_WOOD);
             ship.extinguishFire();
         }
     }

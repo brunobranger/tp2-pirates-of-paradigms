@@ -18,15 +18,13 @@ public class BuyPortCommand implements ShipCommand {
     @Override
     public boolean canExecute(GameState gameState) {
         boolean isUnownedPort = portService.isUnownedPortAtShipPosition(gameState, ship);
-        boolean hasGold = gameState.getCurrentPlayer().getResources()
-                .hasEnoughGold(ResourceCosts.BUY_PORT_GOLD);
+        boolean hasGold = gameState.getCurrentPlayer().hasEnoughGold(ResourceCosts.BUY_PORT_GOLD);
         return isUnownedPort && hasGold;
     }
 
     @Override
     public void execute(GameState gameState) {
-        gameState.getCurrentPlayer().getResources()
-                .spendGold(ResourceCosts.BUY_PORT_GOLD);
+        gameState.getCurrentPlayer().spendGold(ResourceCosts.BUY_PORT_GOLD);
         portService.assignPortToCurrentPlayer(gameState, ship);
     }
 }
