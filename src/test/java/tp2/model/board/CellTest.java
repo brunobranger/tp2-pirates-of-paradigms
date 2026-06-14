@@ -28,10 +28,10 @@ class CellTest {
     void climateExpiresAndRestoresOriginalTerrain() {
         Cell cell = new Cell(new Position(0, 0), TerrainType.OPEN_SEA);
 
-        cell.applyTemporalClimate(TerrainType.STORM, 1);
+        cell.setTemporalTerrain(TerrainType.STORM, 1);
         assertEquals(TerrainType.STORM, cell.getTerrain());
 
-        cell.decrementClimateDuration();
+        cell.decrementTemporalTerrainDuration();
         assertEquals(TerrainType.OPEN_SEA, cell.getTerrain());
     }
 

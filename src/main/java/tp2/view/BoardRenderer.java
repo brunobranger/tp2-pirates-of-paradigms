@@ -134,6 +134,8 @@ public class BoardRenderer {
             case REEF           -> "A";
             case MARINE_CURRENT -> "MC";
             case ISLAND         -> "I";
+            case KRAKEN         -> "K";
+            case KRAKEN_BLOCKED_CELL -> "X";
         };
     }
 }

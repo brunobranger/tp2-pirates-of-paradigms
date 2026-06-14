@@ -20,10 +20,10 @@ class ShipTest {
     void receiveDamageAppliesDefenseAndDoesNotDropBelowZero() {
         Sloop ship = new Sloop("Ligera");
 
-        assertEquals(10, ship.receiveDamage(15));
+        assertEquals(10, ship.receiveAttackDamage(15));
         assertEquals(50, ship.getCurrentHp());
 
-        ship.receiveDamage(1000);
+        ship.receiveAttackDamage(1000);
 
         assertEquals(0, ship.getCurrentHp());
         assertTrue(ship.isSunk());

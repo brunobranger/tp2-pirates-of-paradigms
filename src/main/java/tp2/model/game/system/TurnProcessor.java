@@ -15,7 +15,7 @@ public class TurnProcessor {
         Player endingPlayer = gameState.getCurrentPlayer();
         applyEndOfTurnEffects(endingPlayer);
         applyPortRepair(gameState, endingPlayer);
-        gameState.updateClimateEffect();
+        gameState.updateTemporalTerrains();
         checkVictory(gameState);
         cleanup(gameState);
     }
