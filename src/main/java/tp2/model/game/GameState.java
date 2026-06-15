@@ -167,7 +167,7 @@ public class GameState {
     public void applyDamageToAllShips(int damage){
         for(Player player : this.getPlayers()) {
             for (Ship ship : player.getActiveFleet()) {
-                ship.receiveDamage(damage);
+                ship.receivePureDamage(damage);
             }
         }
     }
