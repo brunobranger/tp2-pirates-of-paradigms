@@ -6,6 +6,6 @@ import tp2.model.ship.Ship;
 public class ReefTerrain implements Terrain {
     @Override
     public void applyEntryEffect(Ship ship) {
-        ship.receiveDamage(GameConfig.REEF_DAMAGE);
+        ship.receiveAttackDamage(GameConfig.REEF_DAMAGE);
     }
 }

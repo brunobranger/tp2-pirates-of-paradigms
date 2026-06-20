@@ -195,3 +195,53 @@ class DeckFire implements GameEvent {
     @Override
     public int getDurationInTurns() { return 0; }
 }
+
+
+// =============================================================================
+// KRAKEN
+// =============================================================================
+
+/**
+ * Kraken:
+ * Permanece varios turnos hasta desaparecer.
+ * Bloquea la casilla donde se encuentra y las 8 aledañas.
+ * Ataca a los barcos en su cercanía, reduciendo su HP a la mitad.
+ * Inmoviliza temporalmente una embarcación.
+ */
+class Kraken implements GameEvent {
+
+    private static final int DURATION = 3;
+    private static final double DAMAGE_FACTOR = 0.5;
+    private static final int BLOCKED_AREA_RADIUS = 1;
+    private static final int DAMAGE_AREA_RADIUS = 3;
+
+    @Override
+    public String getName() { return "Kraken"; }
+
+    @Override
+    public String getDescription() {
+        return "El Kraken emerge desde las aguas profundas!";
+    }
+
+    @Override
+    public EventResult apply(GameState gameState) {
+
+        Position position = gameState.spawnKraken(DURATION);
+        List<Position> blockedArea = gameState.getBoardSquareArea(position, BLOCKED_AREA_RADIUS);
+        List<Position> damageArea = gameState.getBoardSquareArea(position, DAMAGE_AREA_RADIUS);
+        blockedArea.remove(position);
+        gameState.applyKrakenBlockedArea(blockedArea, DURATION);
+        List<String> damagedShips = gameState.applyDamageFactorToShipsInArea(damageArea, DAMAGE_FACTOR);
+        String immobilizedShip = gameState.applyEffectToRandomShipInArea(damageArea, new ImmobilizedEffect(DURATION));
+        List<String> consequences = List.of(
+                "Se bloquean las casillas aledañas al Kraken",
+                "Los barcos listados reducen su HP a la mitad",
+                immobilizedShip + " se encuentra inmovilizado por " + DURATION + " turnos"
+        );
+
+        return new EventResult(getName(), damagedShips, DURATION, consequences);
+    }
+
+    @Override
+    public int getDurationInTurns() { return DURATION; }
+}
