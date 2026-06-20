@@ -1,3 +1,4 @@
+// BoardRenderer.java
 package tp2.view;
 
 import tp2.model.board.Board;
@@ -6,6 +7,8 @@ import tp2.model.board.Position;
 import tp2.model.board.TerrainType;
 import tp2.model.game.GameState;
 import tp2.model.player.Player;
+import tp2.model.ship.ShipType;
+
 
 import java.util.Set;
 
@@ -13,6 +16,9 @@ import java.util.Set;
  * Renderizador ASCII del tablero.
  * Responsabilidad: transformar el estado actual del tablero en una
  * representacion textual para consola, sin leer input ni modificar el modelo.
+ *
+ * El coloreado se aplica por categoria (flota, peligro, tesoro, resaltado)
+ * para mantener la lectura clara sin saturar la salida.
  */
 public class BoardRenderer {
 
@@ -20,13 +26,19 @@ public class BoardRenderer {
         return this.render(gameState, null);
     }
 
+    public String render(GameState gameState, Set<Position> validPositions) {
+        return render(gameState, validPositions, null);
+    }
+
     /**
      * Genera la grilla completa con coordenadas y leyenda.
      *
-     * @param gameState estado actual de la partida
+     * @param gameState       estado actual de la partida
+     * @param validPositions  posiciones a marcar como válidas (setup/movimiento), o null
+     * @param highlightedPosition posición a resaltar como última acción (ej. destino de un movimiento), o null
      * @return representacion multilínea lista para imprimir
      */
-    public String render(GameState gameState, Set<Position> validPositions) {
+    public String render(GameState gameState, Set<Position> validPositions, Position highlightedPosition) {
         Board board = gameState.getBoard();
         StringBuilder result = new StringBuilder();
 
@@ -48,7 +60,12 @@ public class BoardRenderer {
                         symbol = " • ";
                     }
                 }
-                result.append(String.format("%-3s", symbol));
+
+                if (currentPos.equals(highlightedPosition)) {
+                    symbol = wrapHighlight(symbol);
+                }
+
+                result.append(padColored(symbol));
             }
             result.append(System.lineSeparator());
         }
@@ -62,7 +79,7 @@ public class BoardRenderer {
     }
 
     /**
-     * Obtiene el simbolo visible de una celda.
+     * Obtiene el simbolo visible de una celda, ya coloreado segun su categoria.
      * La prioridad visual es: barco, puerto, tesoro y terreno.
      */
     private String getCellSymbol(Cell cell, GameState gameState) {
@@ -79,32 +96,24 @@ public class BoardRenderer {
 
             int playerIndex = gameState.getPlayers().indexOf(ownerPort);
             if (playerIndex != -1) {
-                return "P" + (playerIndex + 1);
+                String symbol = "P" + (playerIndex + 1);
+                return AnsiColors.colorize(symbol, getPlayerColor(playerIndex));
             }
         }
         if (hasDynasticTreasure(cell.getPosition(), gameState)) {
-            return "TR";
+            return AnsiColors.colorize("TR", AnsiColors.TREASURE);
         }
 
         if (hasFloatingTreasure(cell.getPosition(), gameState)) {
-            return "FT";
+            return AnsiColors.colorize("FT", AnsiColors.TREASURE);
         }
 
         return getTerrainSymbol(cell.getTerrain());
     }
 
-    /**
-     * Identifica a que jugador pertenece el barco para representarlo como B1,
-     * B2, etc. B? se utiliza como respaldo ante un estado inconsistente.
-     */
-    private String getShipSymbol(Cell cell, GameState gameState) {
-        for (int index = 0; index < gameState.getPlayers().size(); index++) {
-            Player player = gameState.getPlayers().get(index);
-            if (player.hasShip(cell.getOccupant())) {
-                return "B" + (index + 1);
-            }
-        }
-        return "B?";
+    /** @return color asociado a la flota segun su indice (0 -> jugador 1, 1 -> jugador 2) */
+    private String getPlayerColor(int playerIndex) {
+        return playerIndex == 0 ? AnsiColors.PLAYER_ONE : AnsiColors.PLAYER_TWO;
     }
 
     /** @return true si existe un tesoro dinastico visible en la posicion */
@@ -124,18 +133,77 @@ public class BoardRenderer {
 
     /**
      * Traduce los tipos de terreno del modelo a simbolos compactos de consola.
+     * Los terrenos peligrosos o bloqueantes se resaltan en color de alerta.
      */
     private String getTerrainSymbol(TerrainType terrain) {
         return switch (terrain) {
             case OPEN_SEA       -> "~~";
-            case STORM          -> "T";
+            case STORM          -> AnsiColors.colorize("T", AnsiColors.DANGER);
             case PORT           -> "P";
             case FOG            -> "N";
-            case REEF           -> "A";
+            case REEF           -> AnsiColors.colorize("A", AnsiColors.DANGER);
             case MARINE_CURRENT -> "MC";
+            case ISLAND         -> AnsiColors.colorize("I", AnsiColors.DANGER);
+            // case KRAKEN         -> AnsiColors.colorize("K", AnsiColors.DANGER);
+            // case KRAKEN_BLOCKED_CELL -> AnsiColors.colorize("X", AnsiColors.DANGER);
+        };
+    }
+
+    /**
+     * Identifica a que jugador pertenece el barco para representarlo como B1,
+     * B2, etc., coloreado segun la flota. B? se utiliza como respaldo ante
+     * un estado inconsistente y queda sin color.
+     */
+    private String getShipSymbol(Cell cell, GameState gameState) {
+        for (int index = 0; index < gameState.getPlayers().size(); index++) {
+            Player player = gameState.getPlayers().get(index);
+            if (player.hasShip(cell.getOccupant())) {
+                String symbol = getShipTypeAbbreviation(cell.getOccupant().getType());
+                return AnsiColors.colorize(symbol, getPlayerColor(index));
+            }
+        }
+        return "B?";
+    }
+
+
+    /**
+     * Traduce el tipo de barco a una abreviatura de 2 caracteres para el
+     * tablero. Centralizado aca para que agregar un tipo nuevo sea una sola
+     * linea (OCP).
+     */
+    private String getShipTypeAbbreviation(ShipType type) {
+        return switch (type) {
+            case FLAGSHIP -> "FL";
+            case FRIGATE  -> "FR";
+            case GALLEON  -> "GA";
+            case SLOOP    -> "SL";
             case ISLAND         -> "I";
             case KRAKEN         -> "K";
             case KRAKEN_BLOCKED_CELL -> "X";
         };
+    }
+
+    /**
+     * Envuelve un simbolo ya coloreado (o sin colorear) con el resaltado de
+     * ultima accion, preservando legibilidad si ya tenia color propio.
+     */
+    private String wrapHighlight(String symbol) {
+        String visibleText = stripAnsi(symbol);
+        return AnsiColors.colorize(visibleText, AnsiColors.HIGHLIGHT);
+    }
+
+    /**
+     * Aplica padding contando solo el texto visible, sin importar si el
+     * simbolo tiene codigos ANSI o no. Reemplaza el uso de
+     * String.format("%-3s", ...), que cuenta mal los caracteres invisibles.
+     */
+    private String padColored(String symbol) {
+        String visibleText = stripAnsi(symbol);
+        int padding = Math.max(0, 3 - visibleText.length());
+        return symbol + " ".repeat(padding);
+    }
+
+    private String stripAnsi(String text) {
+        return text.replaceAll("\u001B\\[\\d+m", "");
     }
 }

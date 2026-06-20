@@ -175,8 +175,13 @@ public class ConsoleView implements GameView {
         showBoard(gameState);
         showTurnSummary(gameState);
         for (Player player : gameState.getPlayers()) {
+            int playerIndex = gameState.getPlayers().indexOf(player);
+            String playerColor = playerIndex == 0 ? AnsiColors.PLAYER_ONE : AnsiColors.PLAYER_TWO;
+
             out.println();
-            out.println("Jugador " + getPlayerNumber(player, gameState) + " - " + player.getFaction() + " | Recursos: " + player.describeResources());
+            out.println(AnsiColors.colorize("Jugador " + getPlayerNumber(player, gameState)
+                    + " - " + player.getFaction(), playerColor)
+                    + " | Recursos: " + player.describeResources());
             out.println("Puerto inicial: " + displayPosition(player.getHomePortPosition()));
             out.println("Flota:");
             if (player.getActiveFleet().isEmpty()) {
@@ -497,10 +502,16 @@ public class ConsoleView implements GameView {
                 .toList();
     }
 
-    /** Construye el resumen de estadisticas base visible en listados. */
+    /** Construye el resumen de estadisticas base visible en listados, resaltando el HP si esta bajo. */
     private String describeShip(Ship ship) {
+        String hpText = ship.getCurrentHp() + "/" + ship.getMaxHp();
+        boolean lowHp = ship.getCurrentHp() <= ship.getMaxHp() / 3;
+        if (lowHp) {
+            hpText = AnsiColors.colorize(hpText, AnsiColors.DANGER);
+        }
+
         return ship.getName() + " [" + ship.getType() + "]"
-                + " | HP " + ship.getCurrentHp() + "/" + ship.getMaxHp()
+                + " | HP " + hpText
                 + " | ATK " + ship.getAtk()
                 + " | DEF " + ship.getDef()
                 + " | MOV " + ship.getMov()
