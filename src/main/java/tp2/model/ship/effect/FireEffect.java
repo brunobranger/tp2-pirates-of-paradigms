@@ -8,7 +8,7 @@ import tp2.model.ship.Ship;
  */
 public class FireEffect implements ShipEffect {
 
-    public static final int DEFAULT_DAMAGE_PER_TURN = 10;
+    public static final int DEFAULT_DAMAGE_PER_TURN = 3;
 
     private final int damagePerTurn;
 
@@ -50,7 +50,7 @@ public class FireEffect implements ShipEffect {
 
     @Override
     public void applyEndOfTurnDamage(Ship ship) {
-        ship.receiveDamage(damagePerTurn);
+        ship.receivePureDamage(damagePerTurn);
     }
 
     @Override

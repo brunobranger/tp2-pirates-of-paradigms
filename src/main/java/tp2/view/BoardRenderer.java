@@ -177,6 +177,9 @@ public class BoardRenderer {
             case FRIGATE  -> "FR";
             case GALLEON  -> "GA";
             case SLOOP    -> "SL";
+            case ISLAND         -> "I";
+            case KRAKEN         -> "K";
+            case KRAKEN_BLOCKED_CELL -> "X";
         };
     }
 

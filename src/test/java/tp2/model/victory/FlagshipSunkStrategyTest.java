@@ -22,7 +22,7 @@ class FlagshipSunkStrategyTest {
 
         p1.addShip(flagship);
 
-        flagship.receiveDamage(9999);
+        flagship.receiveAttackDamage(9999);
         GameState state = new GameState(new Board(5, 5), List.of(p1, p2));
 
         Player winner = new FlagshipSunkStrategy().check(state);

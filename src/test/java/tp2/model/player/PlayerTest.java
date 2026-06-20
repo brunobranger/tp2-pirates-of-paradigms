@@ -30,7 +30,7 @@ class PlayerTest {
         Flagship flagship = new Flagship("Insignia");
 
         player.addShip(flagship);
-        flagship.receiveDamage(9999);
+        flagship.receiveAttackDamage(9999);
 
         assertTrue(player.isFlagshipSunk());
     }

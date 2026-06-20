@@ -66,7 +66,7 @@ public abstract class Ship {
      * @param rawDamage daño bruto del atacante (su ATK)
      * @return daño efectivo aplicado
      */
-    public int receiveDamage(int rawDamage) {
+    public int receiveAttackDamage(int rawDamage) {
         int effectiveDamage = Math.max(0, rawDamage - def);
         currentHp = Math.max(0, currentHp - effectiveDamage);
         return effectiveDamage;
@@ -99,6 +99,16 @@ public abstract class Ship {
     // -------------------------------------------------------------------------
     // Movimiento y acciones por turno
     // -------------------------------------------------------------------------
+
+    /**
+     * Recibe daño puro, sin tomar en cuenta defensa.
+     * Si HP llega a 0, el barco queda en estado hundido.
+     *
+     * @param rawDamage daño a aplicar
+     */
+    public void receivePureDamage(int rawDamage) {
+        currentHp = Math.max(0, currentHp - rawDamage);
+    }
 
     /**
      * Calcula el movimiento efectivo del barco considerando efectos activos

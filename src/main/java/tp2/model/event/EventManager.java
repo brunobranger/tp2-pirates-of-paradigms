@@ -33,7 +33,8 @@ public class EventManager {
                 new Mutiny(),
                 new FloatingTreasureEvent(),
                 new FavorableWind(),
-                new DeckFire())
+                new DeckFire(),
+                new Kraken())
         );
     }
 
