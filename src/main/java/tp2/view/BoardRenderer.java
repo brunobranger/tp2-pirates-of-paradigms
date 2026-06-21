@@ -144,8 +144,8 @@ public class BoardRenderer {
             case REEF           -> AnsiColors.colorize("A", AnsiColors.DANGER);
             case MARINE_CURRENT -> "MC";
             case ISLAND         -> AnsiColors.colorize("I", AnsiColors.DANGER);
-             case KRAKEN         -> AnsiColors.colorize("K", AnsiColors.DANGER);
-             case KRAKEN_BLOCKED_CELL -> AnsiColors.colorize("X", AnsiColors.DANGER);
+            case KRAKEN         -> AnsiColors.colorize("K", AnsiColors.DANGER);
+            case KRAKEN_BLOCKED_CELL -> AnsiColors.colorize("X", AnsiColors.DANGER);
         };
     }
 
@@ -177,9 +177,6 @@ public class BoardRenderer {
             case FRIGATE  -> "FR";
             case GALLEON  -> "GA";
             case SLOOP    -> "SL";
-            case ISLAND         -> "I";
-            case KRAKEN         -> "K";
-            case KRAKEN_BLOCKED_CELL -> "X";
         };
     }
 
